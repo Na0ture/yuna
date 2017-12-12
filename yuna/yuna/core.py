@@ -9,7 +9,11 @@ __author__ = 'lvzhi'
 __copyright__ = 'Copyright 2017 lvzhi'
 
 
-def update():
+def main():
+    pass
+
+
+def update(stock=600068, date=None):
     """周六日无法更新"""
     if datetime.date.today().weekday() in (5, 6):
         return 'None'
@@ -47,3 +51,7 @@ def _macd():
 
 def _ma():
     pass
+
+
+if __name__ == '__main__':
+    main()
