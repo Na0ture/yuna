@@ -17,44 +17,48 @@ PASS_WD = 'lvzhi'
 DB = 'yuna'
 
 
-def _update(conn, stock, date=1):
+def _update(conn, stocks, date=1):
     """周六日无法更新"""
     if datetime.date.today().weekday() in (5, 6):
         return 'None'
-    stock_name = stock + '.sh' if stock[0] == '6' else stock + '.sz'
+    if isinstance(stocks, str):
+        stock_list = [stocks + '.sh' if stocks[0] == '6' else stocks + '.sz']
+    else:
+        stock_list = [stock + '.sh' if stock[0] == '6' else stock + '.sz' for stock in stocks]
     (year, mon, mday, *scrap) = (datetime.date.today() - datetime.timedelta(days=date)).timetuple()
     query_date = '{}-{}-{}'.format(year, mon, mday)
     WindPy.w.start()
     cur = conn.cursor()
-    a = WindPy.w.wsd(stock_name, 'close', query_date)
-    time_list, data_list, code_list = a.Times, a.Data, a.Codes
-    time_list.append(len(a.Times))
-    data_list.append(len(a.Data))
-    code_list.append(len(a.Codes))
+    for stock_name in stock_list:
+        a = WindPy.w.wsd(stock_name, 'close', query_date)
+        time_list, data_list, code_list = a.Times, a.Data, a.Codes
+        time_list.append(len(a.Times))
+        data_list.append(len(a.Data))
+        code_list.append(len(a.Codes))
 
-    """
-    #b = a.Times[0].timetuple()
-    #c = a.Data[0][0]
-    #d = a.Codes[0]
-    """
+        """
+        #b = a.Times[0].timetuple()
+        #c = a.Data[0][0]
+        #d = a.Codes[0]
+        """
 
-    for code in range(code_list[-1]):
-        try:
-            cur.execute('create table `{}` (time date not null, price float not null)'.format(code_list[code][:-3]))
-        except pymysql.err.InternalError:
-            pass
-        for time in range(time_list[-1]):
-            if not cur.execute('select * from `{}` where time = {}{}{}'.format(
-                    code_list[code][:-3], time_list[time].timetuple()[0],
-                    _date_update(time_list[time].timetuple()[1]),
-                    _date_update(time_list[time].timetuple()[2]))):
-                cur.execute('insert into `{}` values ({}{}{}, {})'.format(
-                    code_list[code][:-3], time_list[time].timetuple()[0],
-                    _date_update(time_list[time].timetuple()[1]),
-                    _date_update(time_list[time].timetuple()[2]),
-                    data_list[code][time]))
-            else:
+        for code in range(code_list[-1]):
+            try:
+                cur.execute('create table `{}` (time date not null, price float not null)'.format(code_list[code][:-3]))
+            except pymysql.err.InternalError:
                 pass
+            for time in range(time_list[-1]):
+                if not cur.execute('select * from `{}` where time = {}{}{}'.format(
+                        code_list[code][:-3], time_list[time].timetuple()[0],
+                        _date_update(time_list[time].timetuple()[1]),
+                        _date_update(time_list[time].timetuple()[2]))):
+                    cur.execute('insert into `{}` values ({}{}{}, {})'.format(
+                        code_list[code][:-3], time_list[time].timetuple()[0],
+                        _date_update(time_list[time].timetuple()[1]),
+                        _date_update(time_list[time].timetuple()[2]),
+                        data_list[code][time]))
+                else:
+                    pass
     conn.commit()
     cur.close()
     return 'OK'
