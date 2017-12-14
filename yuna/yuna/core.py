@@ -32,7 +32,8 @@ def _update(conn, stocks, date=1):
     for stock_name in stock_list:
         a = WindPy.w.wsd(stock_name, 'close', query_date)
         time_list, data_list, code_list = a.Times, a.Data, a.Codes
-        time_list.append(len(a.Times))
+        '''减1去除当天的不稳定数据（上午是昨天，下午是当天，数据源更新问题造成数据后续更新产生bug）'''
+        time_list.append(len(a.Times)-1)
         data_list.append(len(a.Data))
         code_list.append(len(a.Codes))
 
