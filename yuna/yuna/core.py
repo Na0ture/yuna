@@ -17,6 +17,44 @@ PASS_WD = 'lvzhi'
 DB = 'yuna'
 
 
+class TechnicalIndicator:
+
+    def __init__(self):
+        self.ans = []
+
+    def handle(self):
+        pass
+
+
+class Ema(TechnicalIndicator):
+    """指数移动平均线"""
+
+    def __init__(self, data, days, weight_factor=0.7):
+        TechnicalIndicator.__init__(self)
+        self.data = data
+        self.days = days
+        self.weight_factor = 2 / (days + 1)
+        if len(self.data) < self.days:
+            raise ValueError("数据长度不应小于天数")
+
+    def handle(self):
+        ans_length = len(self.data) - self.days + 1
+        for one in range(ans_length):
+            var = 0
+            for day in range(self.days):
+                if day == 0:
+                    var = self.data[day + one]
+                else:
+                    var = self.weight_factor * self.data[day + one] + (1 - self.weight_factor) * var
+            self.ans.append(var)
+
+
+class Macd(TechnicalIndicator):
+
+    def __init__(self):
+        pass
+
+
 def _update(conn, stocks, date=1):
     """周六日无法更新"""
     if datetime.date.today().weekday() in (5, 6):
@@ -38,9 +76,9 @@ def _update(conn, stocks, date=1):
         code_list.append(len(a.Codes))
 
         """
-        #b = a.Times[0].timetuple()
-        #c = a.Data[0][0]
-        #d = a.Codes[0]
+        b = a.Times[0].timetuple()
+        c = a.Data[0][0]
+        d = a.Codes[0]
         """
 
         for code in range(code_list[-1]):
@@ -80,14 +118,6 @@ def _delete(conn):
 def _date_update(original_date):
     """把类似2这样的单个数字转化为02，而双数字则保持不变"""
     return re.sub(r'(\b[1-9]\b)', r'0\1', str(original_date))
-
-
-def _macd():
-    pass
-
-
-def _ma():
-    pass
 
 
 if __name__ == '__main__':
