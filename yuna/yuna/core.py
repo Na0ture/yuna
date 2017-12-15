@@ -48,12 +48,29 @@ class Ema(TechnicalIndicator):
                     var = self.weight_factor * self.data[day + one] + (1 - self.weight_factor) * var
             self.ans.append(var)
 
+    def __sub__(self, other):
+        ans = []
+        if len(other.ans) > len(self.ans):
+            other.ans = other.ans[-(len(self.ans)):]
+            ans_length = len(self.ans)
+        else:
+            self.ans = self.ans[-(len(other.ans)):]
+            ans_length = len(other.ans)
+        for one in range(ans_length):
+            ans.append(self.ans[one] - other.ans[one])
+        return ans
+
 
 class Macd(TechnicalIndicator):
 
-    def __init__(self):
-        pass
+    def __init__(self, short, long, m):
+        TechnicalIndicator.__init__(self)
+        self.short = short
+        self.long = long
+        self.m = m
 
+    def handle(self):
+        pass
 
 def _update(conn, stocks, date=1):
     """周六日无法更新"""
