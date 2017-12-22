@@ -3,6 +3,8 @@ import WindPy
 import re
 import datetime
 from functools import partial
+from pprint import pprint
+import pandas as pd
 
 __title__ = 'yuna'
 __version__ = '0.0.3'
@@ -152,6 +154,22 @@ def _delete(conn):
     cur.close()
 
 
+def _query(conn, stock, indicator=0):
+    cur = conn.cursor()
+    cur.execute("select price from `{}` order by time".format(stock))
+    var = cur.fetchall()
+    data = []
+    for i in range(len(var)):
+        data.append(var[i][0])
+    a = indicator(data).ans
+    ts = pd.Series(a[0])
+    ts.plot()
+    sd = pd.Series(a[1])
+    sd.plot()
+    conn.commit()
+    cur.close()
+
+
 def _date_update(original_date):
     """把类似2这样的单个数字转化为02，而双数字则保持不变"""
     return re.sub(r'(\b[1-9]\b)', r'0\1', str(original_date))
@@ -162,4 +180,5 @@ if __name__ == '__main__':
                            charset='utf8')
     update = partial(_update, conn)
     delete = partial(_delete, conn)
+    query = partial(_query, conn)
     """conn.close()"""
