@@ -19,10 +19,11 @@ DB = 'yuna'
 
 class TechnicalIndicator:
 
-    def __init__(self):
+    def __init__(self, data):
+        self.data = data
         self.ans = []
 
-    def handle(self):
+    def _handle(self):
         pass
 
 
@@ -30,14 +31,19 @@ class Ema(TechnicalIndicator):
     """指数移动平均线"""
 
     def __init__(self, data, days, weight_factor=0.7):
-        TechnicalIndicator.__init__(self)
-        self.data = data
+        TechnicalIndicator.__init__(self, data)
         self.days = days
         self.weight_factor = 2 / (days + 1)
         if len(self.data) < self.days:
             raise ValueError("数据长度不应小于天数")
+        self._handle()
 
-    def handle(self):
+    def _handle(self):
+        """
+            data = [3, 4, 5]
+            len(data) #3
+            Ema(data, 1) => len(.ans) #3 => 3-1+1=3
+        """
         ans_length = len(self.data) - self.days + 1
         for one in range(ans_length):
             var = 0
@@ -58,19 +64,33 @@ class Ema(TechnicalIndicator):
             ans_length = len(other.ans)
         for one in range(ans_length):
             ans.append(self.ans[one] - other.ans[one])
-        return ans
+        obj = Ema(ans, 1)
+        return obj
+
+    def __mul__(self, other):
+        obj = Ema(list(map(lambda x: x * other, self.data)), 1)
+        return obj
 
 
 class Macd(TechnicalIndicator):
-
-    def __init__(self, short, long, m):
-        TechnicalIndicator.__init__(self)
+    """指数平滑移动平均线"""
+    def __init__(self, data, short=12, long=26, m=9):
+        TechnicalIndicator.__init__(self, data)
         self.short = short
         self.long = long
         self.m = m
+        if len(self.data) < (self.long + self.m - 2):
+            raise ValueError("数据长度不应小于天数")
+        self._handle()
 
-    def handle(self):
-        pass
+    def _handle(self):
+        diff = Ema(self.data, self.short) - Ema(self.data, self.long)
+        self.ans.append(diff.ans)
+        dea = Ema(diff.ans, self.m)
+        self.ans.append(dea.ans)
+        macd = (diff - dea) * 2
+        self.ans.append(macd.ans)
+
 
 def _update(conn, stocks, date=1):
     """周六日无法更新"""
