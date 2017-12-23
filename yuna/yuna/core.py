@@ -3,8 +3,6 @@ import WindPy
 import re
 import datetime
 from functools import partial
-from pprint import pprint
-import pandas as pd
 
 __title__ = 'yuna'
 __version__ = '0.0.3'
@@ -180,10 +178,7 @@ def _query(conn, stock, indicator=0):
     for i in range(len(var)):
         data.append(var[i][0])
     a = indicator(data).ans
-    ts = pd.Series(a[0])
-    ts.plot()
-    sd = pd.Series(a[1])
-    sd.plot()
+    print(a)
     conn.commit()
     cur.close()
 
