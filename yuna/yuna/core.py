@@ -5,7 +5,7 @@ import datetime
 from functools import partial
 
 __title__ = 'yuna'
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 __author__ = 'lvzhi'
 __copyright__ = 'Copyright 2017 lvzhi'
 
@@ -27,17 +27,13 @@ class TechnicalIndicator:
         pass
 
 
-class Ema(TechnicalIndicator):
-    """指数移动平均线"""
-
+class MyEma(TechnicalIndicator):
     def __init__(self, data, days, weight_factor=0.7):
         TechnicalIndicator.__init__(self, data)
         self.days = days
         self.weight_factor = 2 / (days + 1)
-        """
         if len(self.data) < self.days:
             raise ValueError("数据长度不应小于天数")
-        """
         self._handle()
 
     def _handle(self):
@@ -45,7 +41,7 @@ class Ema(TechnicalIndicator):
             data = [3, 4, 5]
             len(data) #3
             Ema(data, 1) => len(.ans) #3 => 3-1+1=3
-
+        """
         ans_length = len(self.data) - self.days + 1
         for one in range(ans_length):
             var = 0
@@ -55,16 +51,8 @@ class Ema(TechnicalIndicator):
                 else:
                     var = self.weight_factor * self.data[day + one] + (1 - self.weight_factor) * var
             self.ans.append(var)
-        """
-        ans_length = len(self.data)
-        for one in range(ans_length):
-            if one == 0:
-                self.ans.append(self.data[one])
-            else:
-                self.ans.append(self.weight_factor * self.data[one] + (1 - self.weight_factor) * self.ans[-1])
 
     def __sub__(self, other):
-        """
         ans = []
         if len(other.ans) > len(self.ans):
             other.ans = other.ans[-(len(self.ans)):]
@@ -76,7 +64,49 @@ class Ema(TechnicalIndicator):
             ans.append(self.ans[one] - other.ans[one])
         obj = Ema(ans, 1)
         return obj
-        """
+
+    def __mul__(self, other):
+        obj = Ema(list(map(lambda x: x * other, self.ans)), 1)
+        return obj
+
+
+class MyMacd(TechnicalIndicator):
+    def __init__(self, data, short=12, long=26, m=9):
+        TechnicalIndicator.__init__(self, data)
+        self.short = short
+        self.long = long
+        self.m = m
+        if len(self.data) < (self.long + self.m - 2):
+            raise ValueError("数据长度不应小于天数")
+        self._handle()
+
+    def _handle(self):
+        diff = MyEma(self.data, self.short) - MyEma(self.data, self.long)
+        self.ans.append(diff.ans)
+        dea = MyEma(diff.ans, self.m)
+        self.ans.append(dea.ans)
+        macd = (diff - dea) * 2
+        self.ans.append(macd.ans)
+
+
+class Ema(TechnicalIndicator):
+    """指数移动平均线"""
+
+    def __init__(self, data, days, weight_factor=0.7):
+        TechnicalIndicator.__init__(self, data)
+        self.days = days
+        self.weight_factor = 2 / (days + 1)
+        self._handle()
+
+    def _handle(self):
+        ans_length = len(self.data)
+        for one in range(ans_length):
+            if one == 0:
+                self.ans.append(self.data[one])
+            else:
+                self.ans.append(self.weight_factor * self.data[one] + (1 - self.weight_factor) * self.ans[-1])
+
+    def __sub__(self, other):
         ans, ans_length = [], len(self.ans)
         for one in range(ans_length):
             ans.append(self.ans[one] - other.ans[one])
@@ -95,10 +125,6 @@ class Macd(TechnicalIndicator):
         self.short = short
         self.long = long
         self.m = m
-        """
-        if len(self.data) < (self.long + self.m - 2):
-            raise ValueError("数据长度不应小于天数")
-        """
         self._handle()
 
     def _handle(self):
