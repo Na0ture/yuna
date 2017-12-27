@@ -19,7 +19,7 @@ DB = 'yuna'
 
 class TechnicalIndicator:
 
-    def __init__(self, data):
+    def __init__(self, data):       # data = [price1, price2...priceN]
         self.data = data
         self.ans = []
 
@@ -92,13 +92,14 @@ class MyMacd(TechnicalIndicator):
 class Ema(TechnicalIndicator):
     """指数移动平均线"""
 
-    def __init__(self, data, days, weight_factor=0.7):
+    def __init__(self, data, days):
         TechnicalIndicator.__init__(self, data)
         self.days = days
         self.weight_factor = 2 / (days + 1)
         self._handle()
 
     def _handle(self):
+        """self.ans = [ans]"""
         ans_length = len(self.data)
         for one in range(ans_length):
             if one == 0:
@@ -128,6 +129,7 @@ class Macd(TechnicalIndicator):
         self._handle()
 
     def _handle(self):
+        """self.ans = [[diff], [dea], [macd]]"""
         diff = Ema(self.data, self.short) - Ema(self.data, self.long)
         self.ans.append(diff.ans)
         dea = Ema(diff.ans, self.m)
