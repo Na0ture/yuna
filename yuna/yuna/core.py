@@ -122,6 +122,8 @@ class Sma(TechnicalIndicator):
     def __truediv__(self, other):
         ans, ans_length = [], len(self.ans)
         for one in range(ans_length):
+            if other.ans[one] == 0:
+                other.ans[one] = other.ans[one] + 0.000000001
             ans.append(self.ans[one] / other.ans[one])
         obj = Ema(ans, 1)
         return obj
@@ -178,7 +180,7 @@ class Macd(TechnicalIndicator):
 
 class Rsi(TechnicalIndicator):
     """相对强弱指标"""
-    def __init__(self, data, n1, n2, n3):
+    def __init__(self, data, n1=6, n2=12, n3=24):
         TechnicalIndicator.__init__(self, data)
         self.N1 = n1
         self.N2 = n2
@@ -196,11 +198,11 @@ class Rsi(TechnicalIndicator):
         for one in range(opt_list_length):
             opt_list.append(self.data[one + 1] - self.data[one])
         rsi1 = Sma(self._max(opt_list), self.N1, 1) / Sma(self._abs(opt_list), self.N1, 1) * 100
-        self.ans.append(rsi1)
+        self.ans.append(rsi1.ans)
         rsi2 = Sma(self._max(opt_list), self.N2, 1) / Sma(self._abs(opt_list), self.N2, 1) * 100
-        self.ans.append(rsi2)
+        self.ans.append(rsi2.ans)
         rsi3 = Sma(self._max(opt_list), self.N3, 1) / Sma(self._abs(opt_list), self.N3, 1) * 100
-        self.ans.append(rsi3)
+        self.ans.append(rsi3.ans)
 
 
 def _update(conn, stocks, date=1):
