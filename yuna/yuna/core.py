@@ -5,7 +5,7 @@ import datetime
 from functools import partial
 
 __title__ = 'yuna'
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __author__ = 'lvzhi'
 __copyright__ = 'Copyright 2017 lvzhi'
 
