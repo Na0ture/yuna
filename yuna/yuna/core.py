@@ -1,20 +1,186 @@
-from packages import pymysql
-import WindPy
-import re
+import collections
 import datetime
-from functools import partial
+import WindPy
+from setting import *
+from packages import pymysql
 
 __title__ = 'yuna'
-__version__ = '0.0.4'
+__version__ = '0.1.0'
 __author__ = 'lvzhi'
 __copyright__ = 'Copyright 2017 lvzhi'
 
-'''连接数据库相关常量'''
-HOST = 'localhost'
-PORT = 3306
-USER = 'root'
-PASS_WD = 'lvzhi'
-DB = 'yuna'
+
+class SourceSingleton:
+
+    def __new__(cls, *args, **kwargs):
+        it = cls.__dict__.get("__it__")
+        if it is not None:
+            return it
+        cls.__it__ = it = object.__new__(cls)
+        it.__call_to_source()
+        return it
+
+    def __call_to_source(self):
+        try:
+            self.call_to_source()
+        except Exception:
+            raise SourceError("连接数据源出错")
+
+    def call_to_source(self):
+        pass
+
+    def packing(self, stock, date):
+        pass
+
+
+class WindpySource(SourceSingleton):
+
+    def call_to_source(self):
+        WindPy.w.start()
+
+    def packing(self, stocks, dates):
+        stocks_list = self.__change_stock(stocks)
+        fquery_date, bquery_date = self.__change_date(dates)
+        plane = Plane()
+        for stock_name in stocks_list:
+            a = WindPy.w.wsd(stock_name, "close", fquery_date, bquery_date, "Fill=Previous;PriceAdj=F")
+            truck = Truck()
+            truck.append("Code", a.Codes)
+            truck.append("Times", a.Times)
+            truck.append("Close", a.Data[0])
+            plane.append(truck)
+        return plane
+
+    def __change_date(self, dates):
+        temp = list()
+        for date in dates:
+            if datetime.date(int(date[:4]), int(date[4:6]), int(date[6:])).toordinal() \
+                    <= datetime.date.today().toordinal():
+                temp.append('{}-{}-{}'.format(date[:4], date[4:6], date[6:]))
+            else:
+                raise SourceError("日期不能大于当前日期，请修改")
+        return temp
+
+    def __change_stock(self, stocks):
+        try:
+            if isinstance(stocks, str):
+                stocks_list = [stocks + '.sh' if stocks[0] == '6' else stocks + '.sz']
+            else:
+                stocks_list = [stock + '.sh' if stock[0] == '6' else stock + '.sz' for stock in stocks]
+            return stocks_list
+        except Exception:
+            raise SourceError("转换股票名字时出错")
+
+
+class DestinationSingleton:
+
+    def __new__(cls, *args, **kwargs):
+        it = cls.__dict__.get("__it__")
+        if it is not None:
+            return it
+        cls.__it__ = it = object.__new__(cls)
+        it.__call_to_destination()
+        return it
+
+    def __call_to_destination(self):
+        try:
+            self.call_to_destination()
+        except Exception:
+            raise DestinationRefuseError
+
+    def call_to_destination(self):
+        pass
+
+    def unpacking(self, plane):
+        pass
+
+    def sold_out(self):
+        pass
+
+    def find_out(self, stock):
+        return Truck()
+
+
+class MysqlDestination(DestinationSingleton):
+
+    def call_to_destination(self):
+        self.connector = pymysql.connect(host=HOST, port=PORT, user=USER, passwd=PASS_WD, db=DB,
+                                         charset='utf8')
+
+    def unpacking(self, plane):
+        cur = self.connector.cursor()
+        for truck in plane:
+            code, time, close = truck.pop("Code")[0], truck.pop("Times"), truck.pop("Close")
+            try:
+                cur.execute('create table `{}` (Times date not null, Close float not null)'.format(code[:-3]))
+            except pymysql.err.InternalError:
+                pass
+            data_length = len(time)
+            for i in range(data_length):
+                if not cur.execute('select * from `{}` where Times = {}'.format(code[:-3], time[i].strftime("%Y%m%d"))):
+                    cur.execute('insert into `{}` values ({}, {})'.format(
+                        code[:-3], time[i].strftime("%Y%m%d"), close[i]))
+                else:
+                    pass
+        self.connector.commit()
+        cur.close()
+        return 'OK'
+
+    def sold_out(self):
+        cur = self.connector.cursor()
+        cur.execute(
+            "select concat('drop table `', table_name, '`;') from information_schema.tables where table_schema = "
+            "'{}'".format(DB))
+        var = cur.fetchall()
+        length = len(var)
+        for i in range(length):
+            cur.execute("{}".format(var[i][0]))
+        self.connector.commit()
+        cur.close()
+
+    def find_out(self, stock):
+        truck = Truck()
+        cur = self.connector.cursor()
+        cur.execute("select * from `{}` order by Times".format(stock))
+        var = cur.fetchall()
+        for i in range(len(var)):
+            truck.append("Times", var[i][0])
+            truck.append("Close", var[i][1])
+        return truck
+
+class Plane:
+
+    def __init__(self):
+        self.__elem = list()
+
+    def __getitem__(self, item):
+        return self.__elem[item]
+
+    def append(self, truck):
+        if isinstance(truck, Truck):
+            self.__elem.append(truck)
+
+
+class Truck:
+
+    def __init__(self):
+        self.__elem = collections.defaultdict(list)
+
+    def __getitem__(self, item):
+        return self.__elem[item]
+
+    def append(self, name, data):
+        self.__elem[name].extend(data)
+
+    def pop(self, name):
+        return self.__elem.pop(name)
+
+    def keys(self):
+        return self.__elem.keys()
+
+
+sourceSingleton = globals().get(source, None)()
+destinationSingleton = globals().get(destination, None)()
 
 
 class TechnicalIndicator:
@@ -205,88 +371,35 @@ class Rsi(TechnicalIndicator):
         self.ans.append(rsi3.ans)
 
 
-def _update(conn, stocks, date=1):
-    """周六日无法更新"""
-    if datetime.date.today().weekday() in (5, 6):
-        return 'None'
-    if isinstance(stocks, str):
-        stock_list = [stocks + '.sh' if stocks[0] == '6' else stocks + '.sz']
-    else:
-        stock_list = [stock + '.sh' if stock[0] == '6' else stock + '.sz' for stock in stocks]
-    (year, mon, mday, *scrap) = (datetime.date.today() - datetime.timedelta(days=date)).timetuple()
-    query_date = '{}-{}-{}'.format(year, mon, mday)
-    WindPy.w.start()
-    cur = conn.cursor()
-    for stock_name in stock_list:
-        a = WindPy.w.wsd(stock_name, 'close', query_date)
-        time_list, data_list, code_list = a.Times, a.Data, a.Codes
-        '''减1去除当天的不稳定数据（上午是昨天，下午是当天，数据源更新问题造成数据后续更新产生bug）'''
-        time_list.append(len(a.Times)-1)
-        data_list.append(len(a.Data))
-        code_list.append(len(a.Codes))
-
-        """
-        b = a.Times[0].timetuple()
-        c = a.Data[0][0]
-        d = a.Codes[0]
-        """
-
-        for code in range(code_list[-1]):
-            try:
-                cur.execute('create table `{}` (time date not null, price float not null)'.format(code_list[code][:-3]))
-            except pymysql.err.InternalError:
-                pass
-            for time in range(time_list[-1]):
-                if not cur.execute('select * from `{}` where time = {}{}{}'.format(
-                        code_list[code][:-3], time_list[time].timetuple()[0],
-                        _date_update(time_list[time].timetuple()[1]),
-                        _date_update(time_list[time].timetuple()[2]))):
-                    cur.execute('insert into `{}` values ({}{}{}, {})'.format(
-                        code_list[code][:-3], time_list[time].timetuple()[0],
-                        _date_update(time_list[time].timetuple()[1]),
-                        _date_update(time_list[time].timetuple()[2]),
-                        data_list[code][time]))
-                else:
-                    pass
-    conn.commit()
-    cur.close()
-    return 'OK'
+def update(stocks, *date):
+    plane = sourceSingleton.packing(stocks, date)
+    destinationSingleton.unpacking(plane)
 
 
-def _delete(conn):
-    cur = conn.cursor()
-    cur.execute("select concat('drop table `', table_name, '`;') from information_schema.tables where table_schema = "
-                "'{}'".format(DB))
-    var = cur.fetchall()
-    length = len(var)
-    for i in range(length):
-        cur.execute("{}".format(var[i][0]))
-    conn.commit()
-    cur.close()
+def delete():
+    destinationSingleton.sold_out()
 
 
-def _query(conn, stock, indicator=0):
-    cur = conn.cursor()
-    cur.execute("select price from `{}` order by time".format(stock))
-    var = cur.fetchall()
-    data = []
-    for i in range(len(var)):
-        data.append(var[i][0])
-    a = indicator(data).ans
-    print(a)
-    conn.commit()
-    cur.close()
+def query(stock, indicator):
+    truck = destinationSingleton.find_out(stock)
+    indicator(truck)
 
 
-def _date_update(original_date):
-    """把类似2这样的单个数字转化为02，而双数字则保持不变"""
-    return re.sub(r'(\b[1-9]\b)', r'0\1', str(original_date))
+class YunaException(Exception):
+    pass
 
 
-if __name__ == '__main__':
-    conn = pymysql.connect(host=HOST, port=PORT, user=USER, passwd=PASS_WD, db=DB,
-                           charset='utf8')
-    update = partial(_update, conn)
-    delete = partial(_delete, conn)
-    query = partial(_query, conn)
-    """conn.close()"""
+class SourceError(YunaException):
+    pass
+
+
+class DestinationRefuseError(YunaException):
+    pass
+
+
+class CreateError(YunaException):
+    pass
+
+
+class SetiingError(YunaException):
+    pass
