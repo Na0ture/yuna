@@ -2,7 +2,10 @@ import collections
 import urllib.request, ssl
 import json
 import datetime
-import WindPy
+try:
+    import WindPy
+except ImportError:
+    pass
 from setting import *
 from packages import pymysql
 
