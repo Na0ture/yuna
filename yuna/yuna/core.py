@@ -1,4 +1,6 @@
 import collections
+import urllib.request, ssl
+import json
 import datetime
 import WindPy
 from setting import *
@@ -26,10 +28,20 @@ class SourceSingleton:
         except Exception:
             raise SourceError("连接数据源出错")
 
+    def _change_stock(self, stocks):
+        try:
+            if isinstance(stocks, str):
+                stocks_list = [stocks + '.SH' if stocks[0] == '6' else stocks + '.SZ']
+            else:
+                stocks_list = [stock + '.SH' if stock[0] == '6' else stock + '.SZ' for stock in stocks]
+            return stocks_list
+        except Exception:
+            raise SourceError("转换股票名字时出错")
+
     def call_to_source(self):
         pass
 
-    def packing(self, stock, date):
+    def packing(self, stocks, dates):
         pass
 
 
@@ -39,8 +51,8 @@ class WindpySource(SourceSingleton):
         WindPy.w.start()
 
     def packing(self, stocks, dates):
-        stocks_list = self.__change_stock(stocks)
-        fquery_date, bquery_date = self.__change_date(dates)
+        stocks_list = self._change_stock(stocks)
+        fquery_date, bquery_date = self.change_date(dates)
         plane = Plane()
         for stock_name in stocks_list:
             a = WindPy.w.wsd(stock_name, "close", fquery_date, bquery_date, "Fill=Previous;PriceAdj=F")
@@ -51,7 +63,7 @@ class WindpySource(SourceSingleton):
             plane.append(truck)
         return plane
 
-    def __change_date(self, dates):
+    def change_date(self, dates):
         temp = list()
         for date in dates:
             if datetime.date(int(date[:4]), int(date[4:6]), int(date[6:])).toordinal() \
@@ -61,15 +73,40 @@ class WindpySource(SourceSingleton):
                 raise SourceError("日期不能大于当前日期，请修改")
         return temp
 
-    def __change_stock(self, stocks):
-        try:
-            if isinstance(stocks, str):
-                stocks_list = [stocks + '.sh' if stocks[0] == '6' else stocks + '.sz']
-            else:
-                stocks_list = [stock + '.sh' if stock[0] == '6' else stock + '.sz' for stock in stocks]
-            return stocks_list
-        except Exception:
-            raise SourceError("转换股票名字时出错")
+
+class AliyunSource(SourceSingleton):
+
+    host = 'https://stock.api51.cn'
+    path = '/kline'
+    method = 'GET'
+    query = 'prod_code={}&' \
+             'candle_period=6&' \
+             'candle_mode=1&' \
+             'fields=close_px&' \
+             'get_type=range&' \
+             'start_date={}&' \
+             'end_date={}'
+    url = host + path + '?' + query
+
+    def packing(self, stocks, dates):
+        stocks_list = self._change_stock(stocks)
+        plane = Plane()
+        for stock_name in stocks_list:
+            request = urllib.request.Request(self.url.format(stock_name, *dates))
+            request.add_header('Authorization', 'APPCODE ' + APP_CODE)
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            response = urllib.request.urlopen(request, context=ctx)
+            content = response.read()
+            a = json.loads(content)
+            b = a['data']['candle'][stock_name]
+            truck = Truck()
+            truck.append("Code", [stock_name])
+            truck.append("Times", [datetime.datetime.strptime(str(item[0]), '%Y%m%d') for item in b])
+            truck.append("Close", [item[1] for item in b])
+            plane.append(truck)
+        return plane
 
 
 class DestinationSingleton:
