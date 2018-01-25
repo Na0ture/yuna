@@ -20,9 +20,9 @@ class WindpySource(SourceSingleton):
         for stock_name in stocks_list:
             a = WindPy.w.wsd(stock_name, "close", fquery_date, bquery_date, "Fill=Previous;PriceAdj=F")
             truck = Truck()
-            truck.append("Code", a.Codes)
-            truck.append("Times", a.Times)
-            truck.append("Close", a.Data[0])
+            truck.extend("Code", a.Codes)
+            truck.extend("Times", a.Times)
+            truck.extend("Close", a.Data[0])
             plane.append(truck)
         return plane
 

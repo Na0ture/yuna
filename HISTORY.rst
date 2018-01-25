@@ -1,7 +1,7 @@
 蓝图
 ------------
 
-* featyre-0 分解core.py
+* feature-0 分解core.py
 * feature-0-1 算法类要修改，以便适应数据小类truck
 * feature-0-1-2 算法类实现（macd,kdj,boll,rsi,ma)
 * feature-0-3 引入logging

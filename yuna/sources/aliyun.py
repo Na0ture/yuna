@@ -35,8 +35,8 @@ class AliyunSource(SourceSingleton):
             a = json.loads(content)
             b = a['data']['candle'][stock_name]
             truck = Truck()
-            truck.append("Code", [stock_name])
-            truck.append("Times", [datetime.datetime.strptime(str(item[0]), '%Y%m%d') for item in b])
-            truck.append("Close", [item[1] for item in b])
+            truck.extend("Code", [stock_name])
+            truck.extend("Times", [datetime.datetime.strptime(str(item[0]), '%Y%m%d') for item in b])
+            truck.extend("Close", [item[1] for item in b])
             plane.append(truck)
         return plane

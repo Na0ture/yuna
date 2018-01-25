@@ -1,5 +1,5 @@
 from ..packages import pymysql
-from ..core import DestinationSingleton, Truck
+from ..core import DestinationSingleton, Truck, Plane
 from ..setting import HOST, PORT, USER, PASS_WD, DB
 
 
@@ -40,12 +40,16 @@ class MysqlDestination(DestinationSingleton):
         self.connector.commit()
         cur.close()
 
-    def find_out(self, stock):
-        truck = Truck()
+    def find_out(self, stocks):
+        plane = Plane()
         cur = self.connector.cursor()
-        cur.execute("select * from `{}` order by Times".format(stock))
-        var = cur.fetchall()
-        for i in range(len(var)):
-            truck.append("Times", var[i][0])
-            truck.append("Close", var[i][1])
-        return truck
+        for stock in stocks:
+            truck = Truck()
+            cur.execute("select * from `{}` order by Times".format(stock))
+            var = cur.fetchall()
+            truck.append("Code", stock)
+            for i in range(len(var)):
+                truck.append("Times", var[i][0])
+                truck.append("Close", var[i][1])
+            plane.append(truck)
+        return plane

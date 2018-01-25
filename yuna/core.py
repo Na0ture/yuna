@@ -67,8 +67,8 @@ class DestinationSingleton:
     def sold_out(self):
         pass
 
-    def find_out(self, stock):
-        return Truck()
+    def find_out(self, stocks):
+        raise NotImplemented
 
 
 class Plane:
@@ -93,6 +93,9 @@ class Truck:
         return self.__elem[item]
 
     def append(self, name, data):
+        self.__elem[name].append(data)
+
+    def extend(self, name, data):
         self.__elem[name].extend(data)
 
     def pop(self, name):
@@ -129,6 +132,22 @@ def delete():
     destinationSingleton.sold_out()
 
 
-def query(stock, indicator):
-    truck = destinationSingleton.find_out(stock)
-    indicator(truck)
+from .indicators import _all_indicators
+
+
+def _get_indicator(indicator_name):
+    if indicator_name in _all_indicators:
+        return _all_indicators[indicator_name]
+
+
+def query(stocks, indicator_name):
+    indicator = _get_indicator(indicator_name)
+    plane = destinationSingleton.find_out(stocks)
+    data = []
+    for truck in plane:
+        data.append(indicator(truck['Close']).ans)
+    return data
+
+
+def all_index():
+    return list(_all_indicators.keys())
