@@ -25,12 +25,10 @@ class Sma(TechnicalIndicator):
         ans, ans_length = [], len(self.ans)
         for one in range(ans_length):
             ans.append(self.ans[one] - other.ans[one])
-        obj = Ema(ans, 1)
-        return obj
+        return Ema(ans, switch=True)
 
     def __mul__(self, other):
-        obj = Ema(list(map(lambda x: x * other, self.ans)), 1)
-        return obj
+        return Ema(list(map(lambda x: x * other, self.ans)), switch=True)
 
     def __truediv__(self, other):
         ans, ans_length = [], len(self.ans)
@@ -38,5 +36,4 @@ class Sma(TechnicalIndicator):
             if other.ans[one] == 0:
                 other.ans[one] = other.ans[one] + 0.000000001
             ans.append(self.ans[one] / other.ans[one])
-        obj = Ema(ans, 1)
-        return obj
+        return Ema(ans, switch=True)
