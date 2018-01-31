@@ -15,7 +15,7 @@ class AliyunSource(SourceSingleton):
     query = 'prod_code={}&' \
              'candle_period=6&' \
              'candle_mode=1&' \
-             'fields=close_px&' \
+             'fields=low_px,high_px,close_px&' \
              'get_type=range&' \
              'start_date={}&' \
              'end_date={}'
@@ -31,7 +31,9 @@ class AliyunSource(SourceSingleton):
             truck = Truck()
             truck.extend("Code", [stock_name])
             truck.extend("Times", [datetime.datetime.strptime(str(item[0]), '%Y%m%d') for item in b])
-            truck.extend("Close", [item[1] for item in b])
+            truck.extend("Low", [item[1] for item in b])
+            truck.extend("High", [item[2] for item in b])
+            truck.extend("Close", [item[3] for item in b])
             plane.append(truck)
         return plane
 
