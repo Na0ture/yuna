@@ -12,16 +12,18 @@ class MysqlDestination(DestinationSingleton):
     def unpacking(self, plane):
         cur = self.connector.cursor()
         for truck in plane:
-            code, time, close = truck.pop("Code")[0], truck.pop("Times"), truck.pop("Close")
+            code, time, low, high, close \
+                = truck.pop("Code")[0], truck.pop("Times"), truck.pop("Low"), truck.pop("High"), truck.pop("Close")
             try:
-                cur.execute('create table `{}` (Times date not null, Close float not null)'.format(code[:-3]))
+                cur.execute('create table `{}` (Times date not null, Low float not null, High float not null, '
+                            'Close float not null)'.format(code[:-3]))
             except pymysql.err.InternalError:
                 pass
             data_length = len(time)
             for i in range(data_length):
                 if not cur.execute('select * from `{}` where Times = {}'.format(code[:-3], time[i].strftime("%Y%m%d"))):
-                    cur.execute('insert into `{}` values ({}, {})'.format(
-                        code[:-3], time[i].strftime("%Y%m%d"), close[i]))
+                    cur.execute('insert into `{}` values ({}, {}, {}, {})'.format(
+                        code[:-3], time[i].strftime("%Y%m%d"), low[i], high[i], close[i]))
                 else:
                     pass
         self.connector.commit()
