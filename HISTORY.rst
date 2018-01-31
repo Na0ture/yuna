@@ -3,12 +3,13 @@
 
 * feature-0 分解core.py
 * feature-0-1 算法类要修改，以便适应数据小类truck
-* feature-0-1-8-2 算法类实现（macd,kdj,boll,rsi,ma)
+* feature-0-1-9-8-2 算法类实现（macd,kdj,boll,rsi,ma)
 * feature-0-3 引入logging
 * feature-0-4 对update()以及query()进行参数检查
 * feature-0-5 增加setuptool
 * feature-0-6 对cli支持
-* feature-0-1-8 因kdj需要当日最高价以及最低价，对数据源请求最高价以及最低价
+* feature-0-1-9-8 因kdj需要当日最高价以及最低价，对数据源请求最高价以及最低价
+* feature-0-1-9 加入测试
 
 
 历史
