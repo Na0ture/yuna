@@ -1,5 +1,5 @@
 import datetime
-import urllib
+from urllib.request import *
 import ssl
 import json
 
@@ -25,14 +25,8 @@ class AliyunSource(SourceSingleton):
         stocks_list = self._change_stock(stocks)
         plane = Plane()
         for stock_name in stocks_list:
-            request = urllib.request.Request(self.url.format(stock_name, *dates))
-            request.add_header('Authorization', 'APPCODE ' + APP_CODE)
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            response = urllib.request.urlopen(request, context=ctx)
-            content = response.read()
-            a = json.loads(content)
+            response = self._request_to_response(stock_name, dates)
+            a = self._json_to_dict(response)
             b = a['data']['candle'][stock_name]
             truck = Truck()
             truck.extend("Code", [stock_name])
@@ -40,3 +34,15 @@ class AliyunSource(SourceSingleton):
             truck.extend("Close", [item[1] for item in b])
             plane.append(truck)
         return plane
+
+    def _request_to_response(self, stock_name, dates):
+        request = Request(self.url.format(stock_name, *dates))
+        request.add_header('Authorization', 'APPCODE ' + APP_CODE)
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return urlopen(request, context=ctx)
+
+    def _json_to_dict(self, response):
+        content = response.read()
+        return json.loads(content)
