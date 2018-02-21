@@ -92,6 +92,9 @@ class Truck:
     def __getitem__(self, item):
         return self.__elem[item]
 
+    def __call__(self, *args, **kwargs):
+        return self.__elem
+
     def append(self, name, data):
         self.__elem[name].append(data)
 
@@ -114,10 +117,34 @@ destinationSingleton = globals().get(DESTINATION, None)()
 
 
 class TechnicalIndicator:
+    """
+    参数data：原数据字典 or 处理过程中的中间列表
 
-    def __init__(self, data):       # data = [price1, price2...priceN]
-        self.data = data
-        self.ans = []
+    参数handle：仅当参数data为中间列表的时候有效，开启是否把列表的数据过一边_handle方法
+
+    该类的对象分三种情况初始化：
+    （1）传入collections.defaultdict类，处理，结果在ans
+    （2）传入list类，开启handle，处理，结果在ans
+    （3）传入list类，默认handle，不处理，结果在ans
+    """
+
+    def __init__(self, data, handle):
+        if isinstance(data, dict):
+            self.times = data['Times']
+            self.low = data['Low']
+            self.high = data['High']
+            self.close = data['Close']
+            self.data = data
+            self.ans = []
+            self._handle()
+        elif isinstance(data, list) and handle == 'off':
+            self.ans = data
+        elif isinstance(data, list) and handle == 'on':
+            self.close = data
+            self.ans = []
+            self._handle()
+        else:
+            raise TypeError("传入给算法类的初参不符合要求")
 
     def _handle(self):
         pass
@@ -145,7 +172,7 @@ def query(stocks, indicator_name):
     plane = destinationSingleton.find_out(stocks)
     data = []
     for truck in plane:
-        data.append(indicator(truck['Close']).ans)
+        data.append(indicator(truck()).ans)
     return data
 
 

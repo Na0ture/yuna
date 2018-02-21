@@ -4,18 +4,17 @@ from .ema import Ema
 
 class Macd(TechnicalIndicator):
     """指数平滑移动平均线"""
-    def __init__(self, data, short=12, long=26, m=9):
-        TechnicalIndicator.__init__(self, data)
+    def __init__(self, data, short=12, long=26, m=9, handle='off'):
         self.short = short
         self.long = long
         self.m = m
-        self._handle()
+        super().__init__(data, handle)
 
     def _handle(self):
         """self.ans = [[diff], [dea], [macd]]"""
         diff = Ema(self.data, self.short) - Ema(self.data, self.long)
         self.ans.append(diff.ans)
-        dea = Ema(diff.ans, self.m)
+        dea = Ema(diff.ans, self.m, handle='on')
         self.ans.append(dea.ans)
         macd = (diff - dea) * 2
         self.ans.append(macd.ans)

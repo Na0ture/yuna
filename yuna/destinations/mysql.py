@@ -52,6 +52,8 @@ class MysqlDestination(DestinationSingleton):
             truck.append("Code", stock)
             for i in range(len(var)):
                 truck.append("Times", var[i][0])
-                truck.append("Close", var[i][1])
+                truck.append("Low", var[i][1])
+                truck.append("High", var[i][2])
+                truck.append("Close", var[i][3])
             plane.append(truck)
         return plane
