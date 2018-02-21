@@ -1,4 +1,4 @@
-from . import ema, macd, myema, mymacd, rsi, sma, ema_numpy, macd_numpy
+from . import ema, macd, myema, mymacd, rsi, sma, ema_numpy, macd_numpy, kdj
 
 _all_indicators = {
     'macd': macd.Macd,
@@ -9,4 +9,5 @@ _all_indicators = {
     'sma': sma.Sma,
     #'ema_numpy': ema_numpy.Ema_Numpy,
     #'macd_numpy': macd_numpy.Macd_Numpy,
+    'kdj': kdj.Kdj,
 }
