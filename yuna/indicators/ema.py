@@ -2,7 +2,10 @@ from ..core import TechnicalIndicator
 
 
 class Ema(TechnicalIndicator):
-    """指数移动平均线"""
+    """
+    指数移动平均线（Exponential moving average）
+    算法来源：https://en.wikipedia.org/wiki/Moving_average
+    """
 
     def __init__(self, data, days=12, handle='off'):
         self.days = days
@@ -10,7 +13,6 @@ class Ema(TechnicalIndicator):
         super().__init__(data, handle)
 
     def _handle(self):
-        """self.ans = [ans]"""
         ans_length = len(self.close)
         for one in range(ans_length):
             if one == 0:

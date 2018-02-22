@@ -3,7 +3,10 @@ from .sma import Sma
 
 
 class Kdj(TechnicalIndicator):
-    """随机指标"""
+    """
+    随机指标（Stochastic oscillator）
+    算法来源：https://en.wikipedia.org/wiki/Stochastic_oscillator
+    """
 
     def __init__(self, data, n=9, m1=3, m2=3, handle='off'):
         self.N = n
@@ -17,9 +20,9 @@ class Kdj(TechnicalIndicator):
         ans_length, rsv = len(self.close), []
         for one in range(ans_length):
             rsv.append((self.close[one] - llw[one]) / (hhv[one] - llw[one]) * 100)
-        k = Sma(rsv, self.M1, 1, handle='on')
+        k = Sma(rsv, self.M1, handle='on')
         self.ans.append(k.ans)
-        d = Sma(k.ans, self.M2, 1, handle='on')
+        d = Sma(k.ans, self.M2, handle='on')
         self.ans.append(d.ans)
         j = k * 3 - d * 2
         self.ans.append(j.ans)
@@ -43,4 +46,3 @@ class Kdj(TechnicalIndicator):
         """
         length = len(high)
         return [max(high[0:i + 1]) if i < n else max(high[i + 1 - n:i + 1]) for i in range(length)]
-

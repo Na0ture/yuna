@@ -1,12 +1,13 @@
 from ..core import TechnicalIndicator
-from .ema import Ema
 
 
 class Sma(TechnicalIndicator):
-    """移动平均线"""
+    """
+    指数移动平均线（moving average）
+    算法来源：https://en.wikipedia.org/wiki/Moving_average
+    """
 
-    def __init__(self, data, days, factor, handle='off'):
-        if days <= factor: raise ValueError("天数必须大于权重参数")
+    def __init__(self, data, days=6, factor=1, handle='off'):
         self.days = days
         self.weight_factor = factor / days
         super().__init__(data, handle)
@@ -24,10 +25,10 @@ class Sma(TechnicalIndicator):
         ans, ans_length = [], len(self.ans)
         for one in range(ans_length):
             ans.append(self.ans[one] - other.ans[one])
-        return Ema(ans)
+        return Sma(ans)
 
     def __mul__(self, other):
-        return Ema(list(map(lambda x: x * other, self.ans)))
+        return Sma(list(map(lambda x: x * other, self.ans)))
 
     def __truediv__(self, other):
         ans, ans_length = [], len(self.ans)
@@ -35,4 +36,4 @@ class Sma(TechnicalIndicator):
             if other.ans[one] == 0:
                 other.ans[one] = other.ans[one] + 0.000000001
             ans.append(self.ans[one] / other.ans[one])
-        return Ema(ans)
+        return Sma(ans)

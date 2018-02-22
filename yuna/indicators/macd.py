@@ -3,7 +3,10 @@ from .ema import Ema
 
 
 class Macd(TechnicalIndicator):
-    """指数平滑移动平均线"""
+    """
+    指数平滑移动平均线(Moving average convergence/divergence)
+    算法来源：https://en.wikipedia.org/wiki/MACD
+    """
     def __init__(self, data, short=12, long=26, m=9, handle='off'):
         self.short = short
         self.long = long
