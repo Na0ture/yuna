@@ -25,7 +25,8 @@ class SourceSingleton:
         except Exception:
             raise SourceError("连接数据源出错")
 
-    def _change_stock(self, stocks):
+    @classmethod
+    def change_stock(cls, stocks):
         try:
             if isinstance(stocks, str):
                 stocks_list = [stocks + '.SH' if stocks[0] == '6' else stocks + '.SZ']
