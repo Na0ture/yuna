@@ -22,11 +22,11 @@ class AliyunSource(SourceSingleton):
     url = host + path + '?' + query
 
     def packing(self, stocks, dates):
-        stocks_list = self._change_stock(stocks)
+        stocks_list = super().change_stock(stocks)
         plane = Plane()
         for stock_name in stocks_list:
-            response = self._request_to_response(stock_name, dates)
-            a = self._json_to_dict(response)
+            response = self.__class__.request_to_response(stock_name, dates)
+            a = self.__class__.json_to_dict(response)
             b = a['data']['candle'][stock_name]
             truck = Truck()
             truck.extend("Code", [stock_name])
@@ -37,14 +37,16 @@ class AliyunSource(SourceSingleton):
             plane.append(truck)
         return plane
 
-    def _request_to_response(self, stock_name, dates):
-        request = Request(self.url.format(stock_name, *dates))
+    @classmethod
+    def request_to_response(cls, stock_name, dates):
+        request = Request(cls.url.format(stock_name, *dates))
         request.add_header('Authorization', 'APPCODE ' + APP_CODE)
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
         return urlopen(request, context=ctx)
 
-    def _json_to_dict(self, response):
+    @classmethod
+    def json_to_dict(cls, response):
         content = response.read()
         return json.loads(content)
