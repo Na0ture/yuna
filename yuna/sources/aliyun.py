@@ -26,15 +26,8 @@ class AliyunSource(SourceSingleton):
         plane = Plane()
         for stock_name in stocks_list:
             response = self.__class__.request_to_response(stock_name, dates)
-            a = self.__class__.json_to_dict(response)
-            b = a['data']['candle'][stock_name]
-            truck = Truck()
-            truck.extend("Code", [stock_name])
-            truck.extend("Times", [datetime.datetime.strptime(str(item[0]), '%Y%m%d') for item in b])
-            truck.extend("Low", [item[1] for item in b])
-            truck.extend("High", [item[2] for item in b])
-            truck.extend("Close", [item[3] for item in b])
-            plane.append(truck)
+            stock_data = self.__class__.json_to_dict(response)
+            plane.append(self.__class__.dict_to_truck(stock_name, stock_data))
         return plane
 
     @classmethod
@@ -50,3 +43,15 @@ class AliyunSource(SourceSingleton):
     def json_to_dict(cls, response):
         content = response.read()
         return json.loads(content)
+
+    @classmethod
+    def dict_to_truck(cls, stock_name, stock_data):
+        truck = Truck()
+        truck.extend("Code", [stock_name])
+        candle = stock_data['data']['candle'][stock_name]
+        for i in candle:
+            truck.append('Times', datetime.datetime.strptime(str(i[0]), '%Y%m%d'))
+            truck.append('Low', i[1])
+            truck.append('High', i[2])
+            truck.append('Close', i[3])
+        return truck
