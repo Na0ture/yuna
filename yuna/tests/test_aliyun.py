@@ -31,6 +31,12 @@ ACTUAL_DICT = {''
                                    }
                         }
                }
+ACTUAL_TRUCK = "'Close': [16.4, 16.54, 16.78, 17.07]\n" \
+               "'Code': ['002450.SZ']\n" \
+               "'High': [16.45, 16.71, 16.99, 17.48]\n" \
+               "'Low': [15.81, 16.4, 16.34, 16.86]\n" \
+               "'Times': [datetime.datetime(2016, 5, 31, 0, 0), datetime.datetime(2016, 6, 1, 0, 0)," \
+               " datetime.datetime(2016, 6, 2, 0, 0), datetime.datetime(2016, 6, 3, 0, 0)]"
 
 
 class TestAliyun(unittest.TestCase):
@@ -54,3 +60,7 @@ class TestAliyun(unittest.TestCase):
         expected_response = mock_get.return_value
         expected_dict = AliyunSource.json_to_dict(expected_response)
         self.assertEqual(expected_dict, ACTUAL_DICT)
+
+    def test_dict_to_truck(self):
+        expected_truck = AliyunSource.dict_to_truck('002450.SZ', ACTUAL_DICT)
+        self.assertEqual(str(expected_truck), ACTUAL_TRUCK)

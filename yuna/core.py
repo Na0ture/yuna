@@ -96,6 +96,17 @@ class Truck:
     def __call__(self, *args, **kwargs):
         return self.__elem
 
+    def __repr__(self):
+        return "'Close': {}\n" \
+               "'Code': {}\n" \
+               "'High': {}\n" \
+               "'Low': {}\n" \
+               "'Times': {}".format(self.__elem['Close'],
+                                    self.__elem['Code'],
+                                    self.__elem['High'],
+                                    self.__elem['Low'],
+                                    self.__elem['Times'],)
+
     def append(self, name, data):
         self.__elem[name].append(data)
 
