@@ -33,9 +33,14 @@ def delete_cli():
 delete_parser = sub_parsers.add_parser('delete', aliases=['d'])
 delete_parser.set_defaults(func=delete_cli)
 
-if __name__ == '__main__':
+
+def cli():
     args = parser.parse_args()
     if len(vars(args)) == 1:
         args.func()
     else:
         args.func(args)
+
+
+if __name__ == '__main__':
+    cli()
