@@ -9,7 +9,7 @@
 * ☑️feature-0-5 增加setuptool
 * ☑️feature-0-6 对cli支持
 * ☑️feature-0-1-9-8 因kdj需要当日最高价以及最低价，对数据源请求最高价以及最低价
-* feature-0-1-9 加入测试
+* ☑️feature-0-1-9 加入测试
 
 历史
 ------------
