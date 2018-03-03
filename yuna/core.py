@@ -21,7 +21,7 @@ class SourceSingleton:
 
     def __call_to_source(self):
         try:
-            self.call_to_source()
+            self.__class__.call_to_source()
         except Exception:
             raise SourceError("连接数据源出错")
 
@@ -36,7 +36,8 @@ class SourceSingleton:
         except Exception:
             raise SourceError("转换股票名字时出错")
 
-    def call_to_source(self):
+    @classmethod
+    def call_to_source(cls):
         pass
 
     def packing(self, stocks, dates):

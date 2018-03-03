@@ -10,28 +10,33 @@ from ..core import SourceSingleton, Plane, Truck, SourceError
 
 class WindpySource(SourceSingleton):
 
-    def call_to_source(self):
+    @classmethod
+    def call_to_source(cls):
         WindPy.w.start()
 
     def packing(self, stocks, dates):
-        stocks_list = self._change_stock(stocks)
-        fquery_date, bquery_date = self.change_date(dates)
+        stocks_list = super().change_stock(stocks)
+        from_query_date, to_query_date = self.__class__.change_date(dates)
         plane = Plane()
         for stock_name in stocks_list:
-            a = WindPy.w.wsd(stock_name, "close", fquery_date, bquery_date, "Fill=Previous;PriceAdj=F")
-            truck = Truck()
-            truck.extend("Code", a.Codes)
-            truck.extend("Times", a.Times)
-            truck.extend("Close", a.Data[0])
-            plane.append(truck)
+            stock_data = self.__class__.wind_to_here(stock_name, from_query_date, to_query_date)
+            plane.append(self.__class__.list_to_truck(stock_name, stock_data))
         return plane
 
-    def change_date(self, dates):
-        temp = list()
-        for date in dates:
-            if datetime.date(int(date[:4]), int(date[4:6]), int(date[6:])).toordinal() \
-                    <= datetime.date.today().toordinal():
-                temp.append('{}-{}-{}'.format(date[:4], date[4:6], date[6:]))
-            else:
-                raise SourceError("日期不能大于当前日期，请修改")
-        return temp
+    @classmethod
+    def change_date(cls, dates):
+        return [f"{i[:4]}-{i[4:6]}-{i[6:]}" for i in dates]
+
+    @classmethod
+    def wind_to_here(cls, stock_name, from_query_date, to_query_date):
+        return WindPy.w.wsd(stock_name, "low,high,close", from_query_date, to_query_date, "Fill=Previous;PriceAdj=F")
+
+    @classmethod
+    def list_to_truck(cls, stock_name, stock_data):
+        truck = Truck()
+        truck.extend('Code', [stock_name])
+        truck.extend('Times', stock_data.Times)
+        truck.extend('Low', stock_data.Data[0])
+        truck.extend('High', stock_data.Data[1])
+        truck.extend('Close', stock_data.Data[2])
+        return truck
