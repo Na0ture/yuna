@@ -34,7 +34,7 @@ class TestWindpy(unittest.TestCase):
         self.assertEqual(expected_response.Times, ACTUAL_TIMES)
 
     def test_change_date(self):
-        dates = ("20160531", "20160603")
+        dates = [datetime.datetime(2016, 5, 31), datetime.datetime(2016, 6, 3)]
         expected_dates = WindpySource.change_date(dates)
         self.assertEqual(expected_dates, ACTUAL_DATES)
 
