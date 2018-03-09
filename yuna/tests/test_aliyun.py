@@ -1,9 +1,12 @@
 import unittest
+import datetime
 from unittest import skipIf
 from unittest.mock import Mock, patch
-from ..sources.aliyun import AliyunSource
+
+from yuna.sources.aliyun import AliyunSource
 
 SKIP_REAL = True
+ACTUAL_DATES = ['20160531', '20160603']
 ACTUAL_JSON = b'{' \
               b'"data":{' \
               b'"candle":{' \
@@ -43,15 +46,19 @@ class TestAliyun(unittest.TestCase):
 
     @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
     def test_integration_contract(self):
-        expected_response = AliyunSource.request_to_response('002450.SZ', ("20160531", "20160603"))
+        expected_response = AliyunSource.request_to_response('002450.SZ', "20160531", "20160603")
         expected_json = expected_response.read()
-        actual_json = ACTUAL_JSON
         self.assertEqual(expected_json, ACTUAL_JSON)
 
     def test_change_stock(self):
         stocks = ['000001', '600000', '300001']
         expected_change_stock = AliyunSource.change_stock(stocks)
         self.assertEqual(expected_change_stock, ['000001.SZ', '600000.SH', '300001.SZ'])
+
+    def test_datetime_to_date(self):
+        dates = [datetime.datetime(2016, 5, 31), datetime.datetime(2016, 6, 3)]
+        expected_dates = AliyunSource.datetime_to_date(dates)
+        self.assertEqual(expected_dates, ACTUAL_DATES)
 
     @patch.object(AliyunSource, 'request_to_response')
     def test_json_to_dict(self, mock_get):

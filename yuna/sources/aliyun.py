@@ -23,15 +23,20 @@ class AliyunSource(SourceSingleton):
 
     def packing(self, stocks, dates):
         stocks_list = super().change_stock(stocks)
+        from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
         for stock_name in stocks_list:
-            response = self.__class__.request_to_response(stock_name, dates)
+            response = self.__class__.request_to_response(stock_name, from_query_date, to_query_date)
             stock_data = self.__class__.json_to_dict(response)
             plane.append(self.__class__.dict_to_truck(stock_name, stock_data))
         return plane
 
     @classmethod
-    def request_to_response(cls, stock_name, dates):
+    def datetime_to_date(cls, validity_dates):
+        return [i.strftime('%Y%m%d') for i in validity_dates]
+
+    @classmethod
+    def request_to_response(cls, stock_name, *dates):
         request = Request(cls.url.format(stock_name, *dates))
         request.add_header('Authorization', 'APPCODE ' + APP_CODE)
         ctx = ssl.create_default_context()
