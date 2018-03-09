@@ -1,4 +1,5 @@
 import collections
+from datetime import datetime
 
 from .setting import *
 from .exceptions import SourceError, DestinationRefuseError
@@ -35,6 +36,25 @@ class SourceSingleton:
             return stocks_list
         except Exception:
             raise SourceError("转换股票名字时出错")
+
+    @classmethod
+    def validate_date(cls, date):
+        """
+        此函数是检验date是否合法
+
+        参数date：含有两个字符串的元组
+        返回值：含有两个合法的datetime对象的列表
+        """
+
+        if len(date) != 2:
+            raise SourceError("日期分起始到期末，数量应为2")
+        try:
+            date = [datetime.strptime(i, '%Y%m%d') for i in date]
+        except ValueError:
+            raise SourceError("日期的格式不正确，请遵循%Y%m%d，例如'20180101'")
+        if date[0].toordinal() - date[1].toordinal() >= 0:
+            raise SourceError("期末日期要大于起初日期")
+        return date
 
     @classmethod
     def call_to_source(cls):
