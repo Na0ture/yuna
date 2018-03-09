@@ -16,7 +16,7 @@ class WindpySource(SourceSingleton):
 
     def packing(self, stocks, dates):
         stocks_list = super().change_stock(stocks)
-        from_query_date, to_query_date = self.__class__.change_date(self.__class__.validate_date(dates))
+        from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
         for stock_name in stocks_list:
             stock_data = self.__class__.wind_to_here(stock_name, from_query_date, to_query_date)
@@ -24,7 +24,7 @@ class WindpySource(SourceSingleton):
         return plane
 
     @classmethod
-    def change_date(cls, validity_dates):
+    def datetime_to_date(cls, validity_dates):
         return [i.strftime('%Y-%m-%d') for i in validity_dates]
 
     @classmethod
