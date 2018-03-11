@@ -141,7 +141,7 @@ class Truck:
         return self.__elem.keys()
 
 
-from .destinations.mysql import MysqlDestination
+from .destinations.mysql_peewee import MysqlDestination
 from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
 
