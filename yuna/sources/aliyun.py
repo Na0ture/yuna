@@ -10,16 +10,19 @@ from ..setting import APP_CODE
 class AliyunSource(SourceSingleton):
 
     host = 'https://stock.api51.cn'
-    path = '/kline'
+    path_kline = '/kline'
+    path_cwfx = '/f10'
     method = 'GET'
-    query = 'prod_code={}&' \
-             'candle_period=6&' \
-             'candle_mode=1&' \
-             'fields=low_px,high_px,close_px&' \
-             'get_type=range&' \
-             'start_date={}&' \
-             'end_date={}'
-    url = host + path + '?' + query
+    query_kline = 'prod_code={}&' \
+                  'candle_period=6&' \
+                  'candle_mode=1&' \
+                  'fields=low_px,high_px,close_px,business_amount&' \
+                  'get_type=range&' \
+                  'start_date={}&' \
+                  'end_date={}'
+    query_cwfx = 'info={}_cwfx'
+    url_kline = host + path_kline + '?' + query_kline
+    url_cwfx = host + path_cwfx + '?' + query_cwfx
 
     def packing(self, stocks, dates):
         stocks_list = super().change_stock(stocks)
@@ -37,12 +40,14 @@ class AliyunSource(SourceSingleton):
 
     @classmethod
     def request_to_response(cls, stock_name, *dates):
-        request = Request(cls.url.format(stock_name, *dates))
-        request.add_header('Authorization', 'APPCODE ' + APP_CODE)
+        request_kline = Request(cls.url_kline.format(stock_name, *dates))
+        request_kline.add_header('Authorization', 'APPCODE ' + APP_CODE)
+        request_cwfx = Request(cls.url_cwfx.format(stock_name, *dates))
+        request_cwfx.add_header('Authorization', 'APPCODE ' + APP_CODE)
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
-        return urlopen(request, context=ctx)
+        return urlopen(request_kline, context=ctx), []
 
     @classmethod
     def json_to_dict(cls, response):
@@ -59,4 +64,5 @@ class AliyunSource(SourceSingleton):
             truck.append('Low', i[1])
             truck.append('High', i[2])
             truck.append('Close', i[3])
+            truck.append('Volume', i[4])
         return truck

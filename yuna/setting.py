@@ -13,5 +13,5 @@ APP_CODE = 'e5bfff16632d4ad393594d33a2b6399a'
 
 
 """数据源以及数据库的设定"""
-SOURCE = 'WindpySource'
+SOURCE = 'AliyunSource'
 DESTINATION = 'MysqlDestination'

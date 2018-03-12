@@ -11,26 +11,22 @@ ACTUAL_JSON = b'{' \
               b'"data":{' \
               b'"candle":{' \
               b'"fields":[' \
-              b'"min_time","low_px","high_px","close_px"],' \
+              b'"min_time","low_px","high_px","close_px","business_amount"],' \
               b'"002450.SZ":[' \
-              b'[20160531,15.81,16.45,16.40],' \
-              b'[20160601,16.40,16.71,16.54],' \
-              b'[20160602,16.34,16.99,16.78],' \
-              b'[20160603,16.86,17.48,17.07]' \
-              b']' \
-              b'}' \
-              b'}' \
-              b'}'
+              b'[20160531,15.81,16.45,16.40,24760291],' \
+              b'[20160601,16.40,16.71,16.54,22863013],' \
+              b'[20160602,16.34,16.99,16.78,50019764],' \
+              b'[20160603,16.86,17.48,17.07,60629918]]}}}'
 ACTUAL_DICT = {''
                'data': {''
                         'candle': {''
                                    '002450.SZ': [
-                                    [20160531, 15.81, 16.45, 16.4],
-                                    [20160601, 16.4, 16.71, 16.54],
-                                    [20160602, 16.34, 16.99, 16.78],
-                                    [20160603, 16.86, 17.48, 17.07]],
+                                    [20160531, 15.81, 16.45, 16.4, 24760291],
+                                    [20160601, 16.4, 16.71, 16.54, 22863013],
+                                    [20160602, 16.34, 16.99, 16.78, 50019764],
+                                    [20160603, 16.86, 17.48, 17.07, 60629918]],
                                    'fields':
-                                   ['min_time', 'low_px', 'high_px', 'close_px']
+                                   ['min_time', 'low_px', 'high_px', 'close_px', 'business_amount']
                                    }
                         }
                }
@@ -39,7 +35,8 @@ ACTUAL_TRUCK = "'Close': [16.4, 16.54, 16.78, 17.07]\n" \
                "'High': [16.45, 16.71, 16.99, 17.48]\n" \
                "'Low': [15.81, 16.4, 16.34, 16.86]\n" \
                "'Times': [datetime.datetime(2016, 5, 31, 0, 0), datetime.datetime(2016, 6, 1, 0, 0)," \
-               " datetime.datetime(2016, 6, 2, 0, 0), datetime.datetime(2016, 6, 3, 0, 0)]"
+               " datetime.datetime(2016, 6, 2, 0, 0), datetime.datetime(2016, 6, 3, 0, 0)]\n" \
+               "'Volume':[24760291, 22863013, 50019764, 60629918]"
 
 
 class TestAliyun(unittest.TestCase):
@@ -47,7 +44,7 @@ class TestAliyun(unittest.TestCase):
     @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
     def test_integration_contract(self):
         expected_response = AliyunSource.request_to_response('002450.SZ', "20160531", "20160603")
-        expected_json = expected_response.read()
+        expected_json = expected_response[0].read()
         self.assertEqual(expected_json, ACTUAL_JSON)
 
     def test_change_stock(self):
