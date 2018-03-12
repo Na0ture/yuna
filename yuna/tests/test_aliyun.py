@@ -53,10 +53,13 @@ class TestAliyun(unittest.TestCase):
 
     @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
     def test_integration_contract(self):
+        """
+        测试真实服务器的数据跟本地缓存数据是否一致，仅当常量SKIP_REAL为False时生效
+        """
         expected_response = AliyunSource.request_to_response('002450.SZ', "20160531", "20160603")
         expected_json = expected_response[0].read()
         self.assertEqual(expected_json, ACTUAL_JSON_KLINE)
-        self.assertEqual(expected_response[1].read(), [])
+        self.assertTrue(expected_response[1].read())
 
     def test_change_stock(self):
         stocks = ['000001', '600000', '300001']
