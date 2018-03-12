@@ -29,7 +29,8 @@ class WindpySource(SourceSingleton):
 
     @classmethod
     def wind_to_here(cls, stock_name, from_query_date, to_query_date):
-        return WindPy.w.wsd(stock_name, "low,high,close", from_query_date, to_query_date, "Fill=Previous;PriceAdj=F")
+        return WindPy.w.wsd(stock_name, "low,high,close,volume,val_pe_deducted_ttm,pb_lf,ps_ttm,pcf_ncf_ttm",
+                            from_query_date, to_query_date, "Fill=Previous;PriceAdj=F")
 
     @classmethod
     def list_to_truck(cls, stock_name, stock_data):
@@ -39,4 +40,9 @@ class WindpySource(SourceSingleton):
         truck.extend('Low', stock_data.Data[0])
         truck.extend('High', stock_data.Data[1])
         truck.extend('Close', stock_data.Data[2])
+        truck.extend('Volume', stock_data.Data[3])
+        truck.extend('PE', [stock_data.Data[4][-1]])
+        truck.extend('PB', [stock_data.Data[5][-1]])
+        truck.extend('PS', [stock_data.Data[6][-1]])
+        truck.extend('PCF', [stock_data.Data[7][-1]])
         return truck
