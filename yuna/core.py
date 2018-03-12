@@ -123,12 +123,20 @@ class Truck:
                "'High': {}\n" \
                "'Low': {}\n" \
                "'Times': {}\n" \
-               "'Volume':{}".format(self.__elem['Close'],
-                                    self.__elem['Code'],
-                                    self.__elem['High'],
-                                    self.__elem['Low'],
-                                    self.__elem['Times'],
-                                    self.__elem['Volume'],)
+               "'Volume': {}\n" \
+               "'PE': {}\n" \
+               "'PB': {}\n" \
+               "'PS': {}\n" \
+               "'PCF': {}".format(self.__elem['Close'],
+                                  self.__elem['Code'],
+                                  self.__elem['High'],
+                                  self.__elem['Low'],
+                                  self.__elem['Times'],
+                                  self.__elem['Volume'],
+                                  self.__elem['PE'],
+                                  self.__elem['PB'],
+                                  self.__elem['PS'],
+                                  self.__elem['PCF'],)
 
     def append(self, name, data):
         self.__elem[name].append(data)
