@@ -75,7 +75,17 @@ class AliyunSource(SourceSingleton):
         :param response: 股票财务json数据
         :return: 返回python类型，指向'gsgz'，具体内容看test部分
 
-        因财务数据过于庞大，暂不做测试
+        因财务数据过于庞大，暂不做测试，字段gsgz的内容范例如下：
+                "gsgz": [
+            {
+                "InnerCode": 36647,
+                "PB": 4.8866,
+                "PCF": -53.3646808,
+                "PS": 10.3098917,
+                "PE": 87.3309896,
+                "TradingDay": 1506700800000
+            }
+        ],
         """
 
         content = response.read()
@@ -84,6 +94,9 @@ class AliyunSource(SourceSingleton):
     @classmethod
     def dict_to_truck(cls, stock_name, stock_kline_data, stock_cwfx_data):
         """
+        有时候阿里云会没有某些股票的pe，pb等相应的财务数据，它们存在的时候是一个数字，
+        不存在的时候，使用get不会报错，则返回0
+
         :param stock_name: 股票名字，例如'002450.SZ'
         :param stock_kline_data: 股票k线dict数据
         :param stock_cwfx_data: 股票财务dict数据
@@ -92,10 +105,10 @@ class AliyunSource(SourceSingleton):
 
         truck = Truck()
         truck.extend("Code", [stock_name])
-        truck.extend("PE", [stock_cwfx_data[0]['PE']])
-        truck.extend("PB", [stock_cwfx_data[0]['PB']])
-        truck.extend("PS", [stock_cwfx_data[0]['PS']])
-        truck.extend("PCF", [stock_cwfx_data[0]['PCF']])
+        truck.extend("PE", [stock_cwfx_data[0].get('PE', 0)])
+        truck.extend("PB", [stock_cwfx_data[0].get('PB', 0)])
+        truck.extend("PS", [stock_cwfx_data[0].get('PS', 0)])
+        truck.extend("PCF", [stock_cwfx_data[0].get('PCF', 0)])
         candle = stock_kline_data['data']['candle'][stock_name]
         for i in candle:
             truck.append('Times', datetime.datetime.strptime(str(i[0]), '%Y%m%d'))
