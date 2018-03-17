@@ -1,4 +1,5 @@
 import datetime
+import math
 
 try:
     import WindPy
@@ -34,15 +35,30 @@ class WindpySource(SourceSingleton):
 
     @classmethod
     def list_to_truck(cls, stock_name, stock_data):
-        truck = Truck()
+        """
+        :param stock_name: 股票名字，例如'002450.SZ'
+        :param stock_data: 股票k线以及财务list数据
+        :return: 装车，准备送往数据库
+
+        因wind资讯无法处理某种情况：比方说某新股在2018年1月1日上市，使用者从2017年某日检索到至今，
+        会使2017年到上市日期为止这段数据为NaN或者None，故增加相应的代码处理这些情况
+        """
+        truck, j = Truck(), 0
+        for i in range(len(stock_data.Data[0])):
+            if stock_data.Data[0][i] is None or math.isnan(stock_data.Data[0][i]):
+                j += 1
         truck.extend('Code', [stock_name])
-        truck.extend('Times', stock_data.Times)
-        truck.extend('Low', stock_data.Data[0])
-        truck.extend('High', stock_data.Data[1])
-        truck.extend('Close', stock_data.Data[2])
-        truck.extend('Volume', stock_data.Data[3])
-        truck.extend('PE', [stock_data.Data[4][-1]])
-        truck.extend('PB', [stock_data.Data[5][-1]])
-        truck.extend('PS', [stock_data.Data[6][-1]])
-        truck.extend('PCF', [stock_data.Data[7][-1]])
+        truck.extend('Times', stock_data.Times[j:])
+        truck.extend('Low', stock_data.Data[0][j:])
+        truck.extend('High', stock_data.Data[1][j:])
+        truck.extend('Close', stock_data.Data[2][j:])
+        truck.extend('Volume', stock_data.Data[3][j:])
+        if stock_data.Data[4][-1] is not None and not math.isnan(stock_data.Data[4][-1]):
+            truck.extend('PE', [stock_data.Data[4][-1]])
+        if stock_data.Data[5][-1] is not None and not math.isnan(stock_data.Data[5][-1]):
+            truck.extend('PB', [stock_data.Data[5][-1]])
+        if stock_data.Data[6][-1] is not None and not math.isnan(stock_data.Data[6][-1]):
+            truck.extend('PS', [stock_data.Data[6][-1]])
+        if stock_data.Data[7][-1] is not None and not math.isnan(stock_data.Data[7][-1]):
+            truck.extend('PCF', [stock_data.Data[7][-1]])
         return truck
