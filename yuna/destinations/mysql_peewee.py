@@ -74,5 +74,5 @@ class Details(Model):
     low = DoubleField()
     high = DoubleField()
     close = DoubleField()
-    volume = IntegerField()
+    volume = DoubleField()
 
