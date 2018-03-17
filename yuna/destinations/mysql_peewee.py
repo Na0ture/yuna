@@ -1,3 +1,4 @@
+from datetime import datetime
 from peewee import *
 from yuna.core import DestinationSingleton, Truck, Plane
 from ..setting import HOST, PORT, USER, PASS_WD, DB
@@ -11,17 +12,24 @@ class MysqlDestination(DestinationSingleton):
         self.db.bind([Basic, Details])
 
     def unpacking(self, plane):
+        """
+        当truck不存在任何字段时，从truck获取到的数据内容如下：
+        code = "None"，pe = 0, pb = 0, ps = 0, pcf = 0, time = [datetime(2000, 1, 1)],
+        low = [0], high = [0], close = [0], volume = [0]
+
+        :param plane: 即将要卸货装载着多个truck的plane实例
+        """
         for truck in plane:
-            code = truck.pop("Code")[0]
-            pe = truck.pop("PE")[0]
-            pb = truck.pop("PB")[0]
-            ps = truck.pop("PS")[0]
-            pcf = truck.pop("PCF")[0]
-            time = truck.pop("Times")
-            low = truck.pop("Low")
-            high = truck.pop("High")
-            close = truck.pop("Close")
-            volume = truck.pop("Volume")
+            code = truck.get("Code", "None")[0]
+            pe = truck.get("PE", [0])[0]
+            pb = truck.get("PB", [0])[0]
+            ps = truck.get("PS", [0])[0]
+            pcf = truck.get("PCF", [0])[0]
+            time = truck.get("Times", [datetime(2000, 1, 1)])
+            low = truck.get("Low", [0])
+            high = truck.get("High", [0])
+            close = truck.get("Close", [0])
+            volume = truck.get("Volume", [0])
 
             self.db.create_tables([Basic, Details])
 
@@ -60,11 +68,10 @@ class MysqlDestination(DestinationSingleton):
 class Basic(Model):
 
     code = CharField()
-    #name = CharField()  #验证下中文名字是否可行
-    PE = DoubleField()  #市盈率
-    PB = DoubleField()  #市净率
-    PS = DoubleField()  #市销率
-    PCF = DoubleField() #市现率
+    PE = DoubleField()
+    PB = DoubleField()
+    PS = DoubleField()
+    PCF = DoubleField()
 
 
 class Details(Model):

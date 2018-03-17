@@ -144,8 +144,9 @@ class Truck:
     def extend(self, name, data):
         self.__elem[name].extend(data)
 
-    def pop(self, name):
-        return self.__elem.pop(name)
+    def get(self, name, default):
+        """当truck实例中没有名为name的key时，不报错，而是返回default"""
+        return self.__elem.get(name, default)
 
     def keys(self):
         return self.__elem.keys()
