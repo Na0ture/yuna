@@ -116,8 +116,8 @@ class Truck:
     def __getitem__(self, item):
         return self.__elem[item]
 
-    def __call__(self, *args, **kwargs):
-        return self.__elem
+    def __setitem__(self, key, value):
+        self.__elem[key] = value
 
     def __repr__(self):
         return "'Close': {}\n" \
@@ -172,13 +172,13 @@ class TechnicalIndicator:
     参数handle：仅当参数data为中间列表的时候有效，开启是否把列表的数据过一边_handle方法
 
     该类的对象分三种情况初始化：
-    （1）传入collections.defaultdict类，处理，结果在ans
+    （1）传入Truck类，处理，结果在ans
     （2）传入list类，开启handle，处理，结果在ans
     （3）传入list类，默认handle，不处理，结果在ans
     """
 
     def __init__(self, data, handle):
-        if isinstance(data, dict):
+        if isinstance(data, Truck):
             self.times = data['Times']
             self.low = data['Low']
             self.high = data['High']
@@ -194,6 +194,10 @@ class TechnicalIndicator:
             self._handle()
         else:
             raise TypeError("传入给算法类的初参不符合要求")
+
+    def __call__(self, *args, **kwargs):
+        self.data[self.__class__.__name__] = self.ans
+        return self.data
 
     def _handle(self):
         pass
@@ -219,11 +223,11 @@ def _get_indicator(indicator_name):
 
 def query(stocks, indicator_name):
     indicator = _get_indicator(indicator_name)
-    plane = destinationSingleton.find_out(stocks)
-    data = []
-    for truck in plane:
-        data.append(indicator(truck()).ans)
-    return data
+    if not isinstance(stocks[0], Truck):
+        plane = destinationSingleton.find_out(stocks)
+    else:
+        plane = stocks
+    return [indicator(truck)() for truck in plane]
 
 
 def all_index():
