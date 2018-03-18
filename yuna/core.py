@@ -221,7 +221,19 @@ def _get_indicator(indicator_name):
         return _all_indicators[indicator_name]
 
 
-def query(stocks, indicator_name):
+def query(stocks, string):
+    methods = string.split(',')
+    methods.reverse()
+    data = stocks
+    while True:
+        try:
+            method = methods.pop()
+            data = _query(data, method)
+        except IndexError:
+            return data
+
+
+def _query(stocks, indicator_name):
     indicator = _get_indicator(indicator_name)
     if not isinstance(stocks[0], Truck):
         plane = destinationSingleton.find_out(stocks)
