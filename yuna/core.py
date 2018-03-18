@@ -203,6 +203,16 @@ class TechnicalIndicator:
         pass
 
 
+class VisualIndicator:
+
+    def __init__(self, data):
+        self.data = data
+        self._handle()
+
+    def _handle(self):
+        pass
+
+
 def update(stocks, *date):
     stocks = all_stocks_list if stocks == 'all' else stocks
     plane = sourceSingleton.packing(stocks, date)
@@ -214,7 +224,7 @@ def delete():
 
 
 from .indicators import _all_indicators
-
+from .visual import _visual_indicators
 
 def _get_indicator(indicator_name):
     if indicator_name in _all_indicators:
@@ -234,12 +244,16 @@ def query(stocks, string):
 
 
 def _query(stocks, indicator_name):
-    indicator = _get_indicator(indicator_name)
-    if not isinstance(stocks[0], Truck):
-        plane = destinationSingleton.find_out(stocks)
-    else:
-        plane = stocks
-    return [indicator(truck)() for truck in plane]
+    if indicator_name in _all_indicators:
+        indicator = _get_indicator(indicator_name)
+        if not isinstance(stocks[0], Truck):
+            plane = destinationSingleton.find_out(stocks)
+        else:
+            plane = stocks
+        return [indicator(truck)() for truck in plane]
+    elif indicator_name in _visual_indicators:
+        indicator = _visual_indicators[indicator_name]
+        indicator(stocks)
 
 
 def all_index():
