@@ -7,6 +7,21 @@ from ..core import SourceSingleton, Plane, Truck
 from ..setting import APP_CODE
 
 
+def retry(f):
+    """简易重试机制"""
+    def wrap(*args):
+        retry_count = 50
+        while retry_count > 0:
+            try:
+                ans = f(*args)
+            except Exception as e:
+                ans = None
+            if ans is not None:
+                return ans
+            retry_count -= 1
+    return wrap
+
+
 class AliyunSource(SourceSingleton):
     """
     因aliyun商家提供的api缘故，获取财务数据跟k线数据分别各需要一条请求才能获取
@@ -43,6 +58,7 @@ class AliyunSource(SourceSingleton):
         return [i.strftime('%Y%m%d') for i in validity_dates]
 
     @classmethod
+    @retry
     def request_to_response(cls, stock_name, *dates):
         """
         :param stock_name: 股票名字，例如'002450.SZ'
