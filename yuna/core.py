@@ -158,7 +158,7 @@ from .destinations.mysql_peewee import MysqlDestination
 from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
 
-with open(os.path.dirname(os.path.abspath(__file__)) + r'\all.pkl', 'rb') as i:
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)) + '/all.pkl'), 'rb') as i:
     all_stocks_list = pickle.load(i)
 
 sourceSingleton = globals().get(SOURCE, None)()
