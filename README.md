@@ -4,17 +4,29 @@
 支持的数据源
 -----------------
 
-- `Wind资讯:  http://www.dajiangzhang.com`
-- `网极科技API: http://help.api51.cn/352770`
+- `Wind资讯:`  http://www.dajiangzhang.com
+- `网极API:` http://help.api51.cn/352770
 
 
 基本使用以及CLI
 ----------
 
+基本相关参数设定
+```buildoutcfg
+>>>import yuna
+>>>yuna.setup(host='localhost', 
+              port=3306, 
+              user='root', 
+              pass_wd='lvzhi', 
+              db='yuna', 
+              app_code='e5bfff16632d4ad393594d33a2b6399a', 
+              SOURCE = 'WindpySource', 
+              DESTINATION = 'MysqlDestination')
+```
+
 
 数据库更新单一股票特定范围的收盘价
 ```
->>>import yuna
 >>>yuna.update("002614", "20170601", "20180117")
 ```
 ```
