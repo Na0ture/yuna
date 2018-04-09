@@ -4,7 +4,7 @@ import os
 import pickle
 
 from .setting import *
-from .exceptions import SourceError, DestinationRefuseError
+from .exceptions import SourceError, DestinationRefuseError, CreateError
 
 __title__ = 'yuna'
 __version__ = '0.2.0'
@@ -161,9 +161,6 @@ from .sources.windpy import WindpySource
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)) + '/all.pkl'), 'rb') as i:
     all_stocks_list = pickle.load(i)
 
-sourceSingleton = globals().get(SOURCE, None)()
-destinationSingleton = globals().get(DESTINATION, None)()
-
 
 class TechnicalIndicator:
     """
@@ -213,13 +210,26 @@ class VisualIndicator:
         pass
 
 
+def _run():
+    try:
+        exec(f"sourceSingleton = globals().get(SOURCE, None)()", globals())
+    except Exception:
+        raise CreateError("无法连接数据源（使用setup方法进行相关参数设定，重启shell并引用yuna包，以完成设置）")
+    try:
+        exec(f"destinationSingleton = globals().get(DESTINATION, None)()", globals())
+    except Exception:
+        raise CreateError("无法连接数据库（使用setup方法进行相关参数设定，重启shell并引用yuna包，以完成设置）")
+
+
 def update(stocks, *date):
+    _run()
     stocks = all_stocks_list if stocks == 'all' else stocks
     plane = sourceSingleton.packing(stocks, date)
     destinationSingleton.unpacking(plane)
 
 
 def delete():
+    _run()
     destinationSingleton.sold_out()
 
 
@@ -232,6 +242,7 @@ def _get_indicator(indicator_name):
 
 
 def query(stocks, string):
+    _run()
     methods = string.split(',')
     methods.reverse()
     data = stocks
