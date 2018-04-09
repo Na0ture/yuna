@@ -82,3 +82,7 @@ class TestAliyun(unittest.TestCase):
     def test_dict_to_truck(self):
         expected_truck = AliyunSource.dict_to_truck('002450.SZ', ACTUAL_DICT_KLINE, ACTUAL_DICT_CWFX)
         self.assertEqual(str(expected_truck), ACTUAL_TRUCK)
+
+
+if __name__ == '__main__':
+    unittest.main()

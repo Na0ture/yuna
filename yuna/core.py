@@ -210,7 +210,7 @@ class VisualIndicator:
         pass
 
 
-def _run():
+def run():
     try:
         exec(f"sourceSingleton = globals().get(SOURCE, None)()", globals())
     except Exception:
@@ -222,14 +222,14 @@ def _run():
 
 
 def update(stocks, *date):
-    _run()
+    run()
     stocks = all_stocks_list if stocks == 'all' else stocks
     plane = sourceSingleton.packing(stocks, date)
     destinationSingleton.unpacking(plane)
 
 
 def delete():
-    _run()
+    run()
     destinationSingleton.sold_out()
 
 
@@ -242,7 +242,7 @@ def _get_indicator(indicator_name):
 
 
 def query(stocks, string):
-    _run()
+    run()
     methods = string.split(',')
     methods.reverse()
     data = stocks

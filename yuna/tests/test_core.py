@@ -30,3 +30,7 @@ class TestCore(unittest.TestCase):
         date = ['20180301', '20180101']
         with self.assertRaisesRegex(SourceError, '期末日期要大于起初日期'):
             SourceSingleton.validate_date(date)
+
+
+if __name__ == '__main__':
+    unittest.main()
