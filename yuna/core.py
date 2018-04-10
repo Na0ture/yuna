@@ -209,6 +209,11 @@ class VisualIndicator:
     def _handle(self):
         pass
 
+import visual
+_visual_indicators = visual._visual_indicators
+import indicators
+_all_indicators = indicators._all_indicators
+
 
 def run():
     try:
@@ -233,8 +238,6 @@ def delete():
     destinationSingleton.sold_out()
 
 
-from .indicators import _all_indicators
-from .visual import _visual_indicators
 
 def _get_indicator(indicator_name):
     if indicator_name in _all_indicators:

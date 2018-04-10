@@ -1,4 +1,4 @@
-import os, json
+import os, json, sys, glob
 from yuna.exceptions import SetiingError
 
 
@@ -37,6 +37,41 @@ else:
 
 with open(config_file, 'w') as json_config_file:
     json.dump(config, json_config_file, indent=2)
+
+_temp = os.getcwd()
+os.chdir(os.path.join(os.path.expanduser('~'), 'yuna'))
+os.makedirs('indicators', exist_ok=True)
+os.makedirs('visual', exist_ok=True)
+os.chdir(os.path.join(os.path.expanduser('~'), 'yuna/indicators'))
+
+if glob.glob("[a-z]*.py"):
+    with open('__init__.py', 'w') as i:
+        i.write("from . import " + ','.join([f"{i.split('.')[0]}" for i in glob.glob("[a-z]*.py")]) + "\n"
+                "\n"
+                "_all_indicators = {\n" +
+                ''.join([f"    '{i.split('.')[0]}': {i.split('.')[0]}.{i.split('.')[0].title()},\n"
+                         for i in glob.glob("[a-z]*.py")]) +
+                "}\n")
+else:
+    with open('__init__.py', 'w') as i:
+        i.write("_all_indicators = {}\n")
+
+os.chdir(os.path.join(os.path.expanduser('~'), 'yuna/visual'))
+
+if glob.glob("[a-z]*.py"):
+    with open('__init__.py', 'w') as i:
+        i.write("from . import " + ','.join([f"{i.split('.')[0]}" for i in glob.glob("[a-z]*.py")]) + "\n"
+                "\n"
+                "_visual_indicators = {\n" +
+                ''.join([f"    '{i.split('.')[0]}': {i.split('.')[0]}.{i.split('.')[0].title()},\n"
+                         for i in glob.glob("[a-z]*.py")]) +
+                "}\n")
+else:
+    with open('__init__.py', 'w') as i:
+        i.write("_visual_indicators = {}\n")
+
+sys.path.append(os.path.join(os.path.expanduser('~'), 'yuna'))
+os.chdir(_temp)
 
 
 def setup(**kwargs):
