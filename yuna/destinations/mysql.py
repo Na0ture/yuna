@@ -1,59 +1,85 @@
-from ..packages import pymysql
-from ..core import DestinationSingleton, Truck, Plane
+from datetime import datetime
+from peewee import *
+from yuna.core import DestinationSingleton, Truck, Plane
 from ..setting import HOST, PORT, USER, PASS_WD, DB
 
 
 class MysqlDestination(DestinationSingleton):
 
     def call_to_destination(self):
-        self.connector = pymysql.connect(host=HOST, port=PORT, user=USER, passwd=PASS_WD, db=DB,
-                                         charset='utf8')
+        self.db = MySQLDatabase(DB, user=USER, password=PASS_WD, host=HOST, port=PORT)
+        self.db.connect()
+        self.db.bind([Basic, Details])
 
     def unpacking(self, plane):
-        cur = self.connector.cursor()
+        """
+        当truck不存在任何字段时，从truck获取到的数据内容如下：
+        code = "None"，pe = 0, pb = 0, ps = 0, pcf = 0, time = [datetime(2000, 1, 1)],
+        low = [0], high = [0], close = [0], volume = [0]
+
+        :param plane: 即将要卸货装载着多个truck的plane实例
+        """
         for truck in plane:
-            code, time, low, high, close \
-                = truck.pop("Code")[0], truck.pop("Times"), truck.pop("Low"), truck.pop("High"), truck.pop("Close")
-            try:
-                cur.execute('create table `{}` (Times date not null, Low float not null, High float not null, '
-                            'Close float not null)'.format(code[:-3]))
-            except pymysql.err.InternalError:
-                pass
+            code = truck.get("Code", "None")[0]
+            pe = truck.get("PE", [0])[0]
+            pb = truck.get("PB", [0])[0]
+            ps = truck.get("PS", [0])[0]
+            pcf = truck.get("PCF", [0])[0]
+            time = truck.get("Times", [datetime(2000, 1, 1)])
+            low = truck.get("Low", [0])
+            high = truck.get("High", [0])
+            close = truck.get("Close", [0])
+            volume = truck.get("Volume", [0])
+
+            self.db.create_tables([Basic, Details])
+
+            Basic.create(code=code, PE=pe, PB=pb, PS=ps, PCF=pcf)
+
             data_length = len(time)
             for i in range(data_length):
-                if not cur.execute('select * from `{}` where Times = {}'.format(code[:-3], time[i].strftime("%Y%m%d"))):
-                    cur.execute('insert into `{}` values ({}, {}, {}, {})'.format(
-                        code[:-3], time[i].strftime("%Y%m%d"), low[i], high[i], close[i]))
-                else:
-                    pass
-        self.connector.commit()
-        cur.close()
-        return 'OK'
+                Details.create(basic=Basic.get(Basic.code == code).id, time=time[i], low=low[i],
+                               high=high[i], close=close[i], volume=volume[i])
 
     def sold_out(self):
-        cur = self.connector.cursor()
-        cur.execute(
-            "select concat('drop table `', table_name, '`;') from information_schema.tables where table_schema = "
-            "'{}'".format(DB))
-        var = cur.fetchall()
-        length = len(var)
-        for i in range(length):
-            cur.execute("{}".format(var[i][0]))
-        self.connector.commit()
-        cur.close()
+        self.db.drop_tables([Basic, Details])
 
     def find_out(self, stocks):
         plane = Plane()
-        cur = self.connector.cursor()
         for stock in stocks:
             truck = Truck()
-            cur.execute("select * from `{}` order by Times".format(stock))
-            var = cur.fetchall()
-            truck.append("Code", stock)
-            for i in range(len(var)):
-                truck.append("Times", var[i][0])
-                truck.append("Low", var[i][1])
-                truck.append("High", var[i][2])
-                truck.append("Close", var[i][3])
+            basic = Basic.get(fn.Substr(Basic.code, 1, 6) == stock)
+            truck.append("Code", basic.code)
+            truck.append("PE", basic.PE)
+            truck.append("PB", basic.PB)
+            truck.append("PS", basic.PS)
+            truck.append("PCF", basic.PCF)
+
+            details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).order_by(Details.time)
+            for i in details:
+                truck.append("Times", i.time)
+                truck.append("Low", i.low)
+                truck.append("High", i.high)
+                truck.append("Close", i.close)
+                truck.append("Volume", i.volume)
             plane.append(truck)
         return plane
+
+
+class Basic(Model):
+
+    code = CharField()
+    PE = DoubleField()
+    PB = DoubleField()
+    PS = DoubleField()
+    PCF = DoubleField()
+
+
+class Details(Model):
+
+    basic = ForeignKeyField(Basic)
+    time = DateTimeField()
+    low = DoubleField()
+    high = DoubleField()
+    close = DoubleField()
+    volume = DoubleField()
+

@@ -1,6 +1,5 @@
 import collections
 from datetime import datetime
-import os
 import pickle
 
 from .setting import *
@@ -51,7 +50,7 @@ class SourceSingleton:
         if len(date) != 2:
             raise SourceError("日期分起始到期末，数量应为2")
         try:
-            date = [datetime.strptime(i, '%Y%m%d') for i in date]
+            date = [datetime.strptime(k, '%Y%m%d') for k in date]
         except ValueError:
             raise SourceError("日期的格式不正确，请遵循%Y%m%d，例如'20180101'")
         if date[0].toordinal() - date[1].toordinal() >= 0:
@@ -154,7 +153,7 @@ class Truck:
         return self.__elem.keys()
 
 
-from .destinations.mysql_peewee import MysqlDestination
+from .destinations.mysql import MysqlDestination
 from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
 
@@ -236,7 +235,6 @@ def update(stocks, *date):
 def delete():
     run()
     destinationSingleton.sold_out()
-
 
 
 def _get_indicator(indicator_name):

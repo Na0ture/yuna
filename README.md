@@ -19,7 +19,7 @@
               user='root', 
               pass_wd='lvzhi', 
               db='yuna', 
-              app_code='e5bfff16632d4ad393594d33a2b6399a', 
+              app_code='yuna',
               SOURCE = 'WindpySource', 
               DESTINATION = 'MysqlDestination')
 ```
