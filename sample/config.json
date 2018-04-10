@@ -1,0 +1,10 @@
+{
+  "HOST": "localhost",
+  "PORT": 3306,
+  "USER": "root",
+  "PASS_WD": "lvzhi",
+  "DB": "yuna",
+  "APP_CODE": "e5bfff16632d4ad393594d33a2b6399a",
+  "SOURCE": "WindpySource",
+  "DESTINATION": "MysqlDestination"
+}
