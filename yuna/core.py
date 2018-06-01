@@ -6,7 +6,7 @@ from .setting import *
 from .exceptions import SourceError, DestinationRefuseError, CreateError
 
 __title__ = 'yuna'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __author__ = 'lvzhi'
 __copyright__ = 'Copyright 2017 lvzhi'
 

@@ -15,7 +15,7 @@ def load_requirements(filename):
 
 setup(
     name='yuna',
-    version='0.2.0',
+    version='0.3.0',
     description='A quantitative analyse for Assets',
     long_description=long_description,
     url='https://github.com/Na0ture/yuna',
