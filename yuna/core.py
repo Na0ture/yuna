@@ -152,7 +152,7 @@ class Truck:
     def keys(self):
         return self.__elem.keys()
 
-
+from .destinations.hdf5 import Hdf5Destination
 from .destinations.mysql import MysqlDestination
 from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
