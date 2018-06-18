@@ -10,17 +10,23 @@ class Hdf5Destination(DestinationSingleton):
         pass
 
     def unpacking(self, plane):
+        """
+        当truck不存在任何字段时，从truck获取到的数据内容如下：
+        code = ["None"]，pe = [0], pb = [0], ps = [0], pcf = [0], time = [datetime(2000, 1, 1)],
+        low = [0], high = [0], close = [0], volume = [0]
 
+        :param plane: 即将要卸货装载着多个truck的plane实例
+        """
         with h5py.File("data.hdf5", 'a') as file:
             self.z = 0
             for truck in plane:
                 code = truck.get("Code", "None")[0]
                 if code is 'None':
                     continue
-                pe = truck.get("PE", [0])[0]
-                pb = truck.get("PB", [0])[0]
-                ps = truck.get("PS", [0])[0]
-                pcf = truck.get("PCF", [0])[0]
+                pe = truck.get("PE", [0])
+                pb = truck.get("PB", [0])
+                ps = truck.get("PS", [0])
+                pcf = truck.get("PCF", [0])
                 time = truck.get("Times", [datetime(2000, 1, 1)])
                 low = truck.get("Low", [0])
                 high = truck.get("High", [0])
@@ -29,23 +35,23 @@ class Hdf5Destination(DestinationSingleton):
 
                 g = file.create_group(code)
 
-                temp = numpy.array([code])
+                temp = numpy.array(code)
                 ds = g.create_dataset("Code", temp.shape, dtype=h5py.special_dtype(vlen=str))
                 ds[...] = temp
 
-                temp = numpy.array([pe])
+                temp = numpy.array(pe)
                 ds = g.create_dataset("PE", temp.shape, float)
                 ds[...] = temp
 
-                temp = numpy.array([pb])
+                temp = numpy.array(pb)
                 ds = g.create_dataset("PB", temp.shape, float)
                 ds[...] = temp
 
-                temp = numpy.array([ps])
+                temp = numpy.array(ps)
                 ds = g.create_dataset("PS", temp.shape, float)
                 ds[...] = temp
 
-                temp = numpy.array([pcf])
+                temp = numpy.array(pcf)
                 ds = g.create_dataset("PCF", temp.shape, float)
                 ds[...] = temp
 
@@ -81,7 +87,6 @@ class Hdf5Destination(DestinationSingleton):
             for stock in stocks:
                 truck = Truck()
                 g = file.get(stock)
-
                 truck.append('Code', g.get('Code')[...][0])
                 truck.append('PE', g.get('PE')[...][0])
                 truck.append('PB', g.get('PB')[...][0])
