@@ -1,4 +1,5 @@
 import datetime
+import time
 from urllib.request import *
 import ssl
 import json
@@ -19,6 +20,7 @@ def retry(f):
             if ans is not None:
                 return ans
             retry_count -= 1
+            time.sleep(1)
     return wrap
 
 
@@ -47,18 +49,22 @@ class AliyunSource(SourceSingleton):
         from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
         for stock_name in stocks_list:
-            response = self.__class__.request_to_response(stock_name, from_query_date, to_query_date)
-            stock_kline_data = self.__class__.json_kline_to_dict(response[0])
-            stock_cwfx_data = self.__class__.json_cwfx_to_dict(response[1])
-            plane.append(self.__class__.dict_to_truck(stock_name, stock_kline_data, stock_cwfx_data))
+            plane.append(self.__class__.temp(stock_name, from_query_date, to_query_date))
         return plane
+
+    @classmethod
+    @retry
+    def temp(cls, stock_name, from_query_date, to_query_date):
+        response = cls.request_to_response(stock_name, from_query_date, to_query_date)
+        stock_kline_data = cls.json_kline_to_dict(response[0])
+        stock_cwfx_data = cls.json_cwfx_to_dict(response[1])
+        return cls.dict_to_truck(stock_name, stock_kline_data, stock_cwfx_data)
 
     @classmethod
     def datetime_to_date(cls, validity_dates):
         return [i.strftime('%Y%m%d') for i in validity_dates]
 
     @classmethod
-    @retry
     def request_to_response(cls, stock_name, *dates):
         """
         :param stock_name: 股票名字，例如'002450.SZ'
@@ -81,7 +87,6 @@ class AliyunSource(SourceSingleton):
         :param response: 股票k线json数据
         :return: 返回python类型，具体内容看test部分
         """
-
         content = response.read()
         return json.loads(content)
 
