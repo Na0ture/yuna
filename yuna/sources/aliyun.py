@@ -43,6 +43,7 @@ class AliyunSource(SourceSingleton):
     query_cwfx = 'info={}_cwfx'
     url_kline = host + path_kline + '?' + query_kline
     url_cwfx = host + path_cwfx + '?' + query_cwfx
+    z = 0
 
     def packing(self, stocks, dates):
         stocks_list = super().change_stock(stocks)
@@ -137,4 +138,6 @@ class AliyunSource(SourceSingleton):
             truck.append('High', i[2])
             truck.append('Close', i[3])
             truck.append('Volume', i[4])
+        cls.z += 1
+        print(cls.z)
         return truck
