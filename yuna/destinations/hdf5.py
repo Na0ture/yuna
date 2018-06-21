@@ -20,7 +20,7 @@ class Hdf5Destination(DestinationSingleton):
         with h5py.File("data.hdf5", 'a') as file:
             self.z = 0
             for truck in plane:
-                code = truck.get("Code", "None")[0]
+                code = truck.get("Code", "None")
                 if code is 'None':
                     continue
                 pe = truck.get("PE", [0])
@@ -33,7 +33,7 @@ class Hdf5Destination(DestinationSingleton):
                 close = truck.get("Close", [0])
                 volume = truck.get("Volume", [0])
 
-                g = file.create_group(code)
+                g = file.create_group(code[0])
 
                 temp = numpy.array(code)
                 ds = g.create_dataset("Code", temp.shape, dtype=h5py.special_dtype(vlen=str))
