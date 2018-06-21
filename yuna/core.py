@@ -246,7 +246,7 @@ def query(stocks, string):
     run()
     methods = string.split(',')
     methods.reverse()
-    data = stocks
+    data = all_stocks_list if stocks == 'all' else stocks
     while True:
         try:
             method = methods.pop()
