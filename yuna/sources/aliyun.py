@@ -50,12 +50,12 @@ class AliyunSource(SourceSingleton):
         from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
         for stock_name in stocks_list:
-            plane.append(self.__class__.temp(stock_name, from_query_date, to_query_date))
+            plane.append(self.__class__.request_to_truck(stock_name, from_query_date, to_query_date))
         return plane
 
     @classmethod
     @retry
-    def temp(cls, stock_name, from_query_date, to_query_date):
+    def request_to_truck(cls, stock_name, from_query_date, to_query_date):
         response = cls.request_to_response(stock_name, from_query_date, to_query_date)
         stock_kline_data = cls.json_kline_to_dict(response[0])
         stock_cwfx_data = cls.json_cwfx_to_dict(response[1])
