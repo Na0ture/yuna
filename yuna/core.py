@@ -103,8 +103,7 @@ class Plane:
         return self.__elem[item]
 
     def append(self, truck):
-        if isinstance(truck, Truck):
-            self.__elem.append(truck)
+        self.__elem.append(truck)
 
 
 class Truck:
