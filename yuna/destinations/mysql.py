@@ -45,6 +45,8 @@ class MysqlDestination(DestinationSingleton):
 
     def find_out(self, stocks):
         plane = Plane()
+        if not isinstance(stocks, list):
+            stocks = [stocks]
         for stock in stocks:
             truck = Truck()
             basic = Basic.get(fn.Substr(Basic.code, 1, 6) == stock)
