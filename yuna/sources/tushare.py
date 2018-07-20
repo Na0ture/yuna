@@ -42,6 +42,7 @@ class TuShareSource(SourceSingleton):
         truck.extend('Low', pandas_data.low)
         truck.extend('High', pandas_data.high)
         truck.extend('Close', pandas_data.close)
+        truck.extend('Volume', pandas_data.volume)
         truck.extend('PE', [stocks_basics.get('pe').get(stock_name)])
         truck.extend('PB', [stocks_basics.get('pb').get(stock_name)])
         truck.extend('PS', [0])
