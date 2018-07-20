@@ -155,6 +155,7 @@ from .destinations.hdf5 import Hdf5Destination
 from .destinations.mysql import MysqlDestination
 from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
+from .sources.tushare import TuShareSource
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)) + '/all.pkl'), 'rb') as i:
     all_stocks_list = pickle.load(i)
