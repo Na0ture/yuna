@@ -18,29 +18,28 @@ class TuShareSource(SourceSingleton):
         plane = Plane()
         stocks_basics = self.__class__.tushare_basics_to_here()
         for stock_name in [stocks]:
-            plane.append(self.__class__.tushare_to_truck(stock_name, from_query_date, to_query_date, stocks_basics))
+            stock_k = self.__class__.tushare_k_to_here(stock_name, from_query_date, to_query_date)
+            plane.append(self.__class__.tushare_to_truck(stock_name, stock_k, stocks_basics))
         return plane
 
     @classmethod
-    def tushare_to_truck(cls, stock_name, from_query_date, to_query_date, stocks_basics):
+    def tushare_to_truck(cls, stock_name, stock_k, stocks_basics):
         """
         查询后股票名字需格式转换，例如'000333'->'000333.SZ'，以符合存储数据的标准化
 
         :param stock_name: 股票名字，例如'002450'
-        :param from_query_date: 起始日期，例如'2016-05-31'
-        :param to_query_date: 终止日期，例如'2016-06-03'
-        :param stocks_basics: 基本面数据，具体详情访问http://tushare.org/fundamental.html#id4
+        :param stock_k: 个体K线数据，具体访问->http://tushare.org/trading.html#id2
+        :param stocks_basics: 总体基本面数据，具体访问->http://tushare.org/fundamental.html#id4
         :return: 装车，准备送往数据库
         """
 
         truck = Truck()
-        pandas_data = cls.tushare_k_to_here(stock_name, from_query_date, to_query_date)
         truck.extend('Code', cls.change_stock(stock_name))
-        truck.extend('Times', pd.to_datetime(pandas_data.date))
-        truck.extend('Low', pandas_data.low)
-        truck.extend('High', pandas_data.high)
-        truck.extend('Close', pandas_data.close)
-        truck.extend('Volume', pandas_data.volume)
+        truck.extend('Times', pd.to_datetime(stock_k.date))
+        truck.extend('Low', stock_k.low)
+        truck.extend('High', stock_k.high)
+        truck.extend('Close', stock_k.close)
+        truck.extend('Volume', stock_k.volume)
         truck.extend('PE', [stocks_basics.get('pe').get(stock_name)])
         truck.extend('PB', [stocks_basics.get('pb').get(stock_name)])
         truck.extend('PS', [0])
