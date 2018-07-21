@@ -26,8 +26,6 @@ class MysqlDestination(DestinationSingleton):
             ps = truck.get("PS", [0])[0]
             pcf = truck.get("PCF", [0])[0]
             time = truck.get("Times", [datetime(2000, 1, 1)])
-            if isinstance(time[0], datetime):
-                time = list(map(lambda x: x.to_pydatetime(), time))
             low = truck.get("Low", [0])
             high = truck.get("High", [0])
             close = truck.get("Close", [0])

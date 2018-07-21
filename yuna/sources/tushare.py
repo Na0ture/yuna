@@ -1,6 +1,6 @@
-import pandas as pd
+from datetime import datetime
 import tushare as ts
-from ..core import SourceSingleton, Plane, Truck
+from yuna.core import SourceSingleton, Plane, Truck
 
 
 class TuShareSource(SourceSingleton):
@@ -35,7 +35,7 @@ class TuShareSource(SourceSingleton):
 
         truck = Truck()
         truck.extend('Code', cls.change_stock(stock_name))
-        truck.extend('Times', pd.to_datetime(stock_k.date))
+        truck.extend('Times', list(map(lambda x: datetime.strptime(x, '%Y-%m-%d'), stock_k.date.tolist())))
         truck.extend('Low', stock_k.low)
         truck.extend('High', stock_k.high)
         truck.extend('Close', stock_k.close)
