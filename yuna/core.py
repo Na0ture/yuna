@@ -90,7 +90,7 @@ class DestinationSingleton:
     def sold_out(self):
         pass
 
-    def find_out(self, stocks):
+    def find_out(self, stocks, from_query_date, to_query_date):
         raise NotImplemented
 
 
@@ -242,7 +242,7 @@ def _get_indicator(indicator_name):
         return _all_indicators[indicator_name]
 
 
-def query(stocks, string):
+def query(stocks, string, from_query_date=None, to_query_date=None):
     run()
     methods = string.split(',')
     methods.reverse()
@@ -250,16 +250,16 @@ def query(stocks, string):
     while True:
         try:
             method = methods.pop()
-            data = _query(data, method)
+            data = _query(data, method, from_query_date, to_query_date)
         except IndexError:
             return data
 
 
-def _query(stocks, indicator_name):
+def _query(stocks, indicator_name, from_query_date, to_query_date):
     if indicator_name in _all_indicators:
         indicator = _get_indicator(indicator_name)
         if not isinstance(stocks[0], Truck):
-            plane = destinationSingleton.find_out(stocks)
+            plane = destinationSingleton.find_out(stocks, from_query_date, to_query_date)
         else:
             plane = stocks
         return [indicator(truck)() for truck in plane]

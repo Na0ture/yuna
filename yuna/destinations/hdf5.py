@@ -80,22 +80,42 @@ class Hdf5Destination(DestinationSingleton):
     def sold_out(self):
         pass
 
-    def find_out(self, stocks):
+    def find_out(self, stocks, from_query_date, to_query_date):
         plane = Plane()
         stocks = SourceSingleton.change_stock(stocks)
         with h5py.File("data.hdf5", 'r') as file:
             for stock in stocks:
-                truck = Truck()
                 g = file.get(stock)
+                time_array = g.get('Times')[...].tolist()
+                if from_query_date is not None:
+                    if to_query_date is not None:
+                        for i in time_array:
+                            if i <= from_query_date:
+                                from_index = time_array.index(i)
+                        if from_query_date < to_query_date:
+                            for i in time_array[from_index:]:
+                                if i <= to_query_date:
+                                    to_index = time_array.index(i)
+                        else:
+                            raise Exception
+                    else:
+                        for i in time_array:
+                            if i <= from_query_date:
+                                from_index = time_array.index(i)
+                                to_index = None
+                else:
+                    from_index = None
+                    to_index = None
+                truck = Truck()
                 truck.append('Code', g.get('Code')[...][0])
                 truck.append('PE', g.get('PE')[...][0])
                 truck.append('PB', g.get('PB')[...][0])
                 truck.append('PS', g.get('PS')[...][0])
                 truck.append('PCF', g.get('PCF')[...][0])
-                truck.extend('Times', list(map(lambda x: datetime.strptime(x, "%Y%m%d"), g.get('Times')[...].tolist())))
-                truck.extend('Low', g.get('Low')[...].tolist())
-                truck.extend('High', g.get('High')[...].tolist())
-                truck.extend('Close', g.get('Close')[...].tolist())
-                truck.extend('Volume', g.get('Volume')[...].tolist())
+                truck.extend('Times', list(map(lambda x: datetime.strptime(x, "%Y%m%d"), time_array[from_index:to_index])))
+                truck.extend('Low', g.get('Low')[...].tolist()[from_index:to_index])
+                truck.extend('High', g.get('High')[...].tolist()[from_index:to_index])
+                truck.extend('Close', g.get('Close')[...].tolist()[from_index:to_index])
+                truck.extend('Volume', g.get('Volume')[...].tolist()[from_index:to_index])
                 plane.append(truck)
         return plane

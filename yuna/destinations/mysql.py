@@ -43,7 +43,7 @@ class MysqlDestination(DestinationSingleton):
     def sold_out(self):
         self.db.drop_tables([Basic, Details])
 
-    def find_out(self, stocks):
+    def find_out(self, stocks, from_query_date, to_query_date):
         plane = Plane()
         if not isinstance(stocks, list):
             stocks = [stocks]
@@ -55,8 +55,17 @@ class MysqlDestination(DestinationSingleton):
             truck.append("PB", basic.PB)
             truck.append("PS", basic.PS)
             truck.append("PCF", basic.PCF)
-
-            details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).order_by(Details.time)
+            if from_query_date is not None:
+                if to_query_date is not None:
+                    details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).where(
+                        Details.time > from_query_date).where(
+                        Details.time < to_query_date).order_by(Details.time)
+                else:
+                    details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).where(
+                        Details.time > from_query_date).order_by(Details.time)
+            else:
+                details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).order_by(
+                    Details.time)
             for i in details:
                 truck.append("Times", i.time)
                 truck.append("Low", i.low)
