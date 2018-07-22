@@ -90,19 +90,22 @@ class Hdf5Destination(DestinationSingleton):
                 if from_query_date is not None:
                     if to_query_date is not None:
                         for i in time_array:
-                            if i <= from_query_date:
+                            if i >= from_query_date:
                                 from_index = time_array.index(i)
+                                break
                         if from_query_date < to_query_date:
                             for i in time_array[from_index:]:
-                                if i <= to_query_date:
+                                if i >= to_query_date:
                                     to_index = time_array.index(i)
+                                    break
                         else:
                             raise Exception
                     else:
                         for i in time_array:
-                            if i <= from_query_date:
+                            if i >= from_query_date:
                                 from_index = time_array.index(i)
                                 to_index = None
+                                break
                 else:
                     from_index = None
                     to_index = None
