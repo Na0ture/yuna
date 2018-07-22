@@ -56,13 +56,15 @@ class MysqlDestination(DestinationSingleton):
             truck.append("PS", basic.PS)
             truck.append("PCF", basic.PCF)
             if from_query_date is not None:
+                _from_query_date = from_query_date[0:4] + '-' + from_query_date[4:6] + '-' + from_query_date[6:]
                 if to_query_date is not None:
+                    _to_query_date = to_query_date[0:4] + '-' + to_query_date[4:6] + '-' + to_query_date[6:]
                     details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).where(
-                        Details.time > from_query_date).where(
-                        Details.time < to_query_date).order_by(Details.time)
+                        Details.time > _from_query_date).where(
+                        Details.time < _to_query_date).order_by(Details.time)
                 else:
                     details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).where(
-                        Details.time > from_query_date).order_by(Details.time)
+                        Details.time > _from_query_date).order_by(Details.time)
             else:
                 details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).order_by(
                     Details.time)
