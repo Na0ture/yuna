@@ -4,9 +4,9 @@
 支持的数据源
 -----------------
 
-- `Wind资讯:`  http://www.dajiangzhang.com
-- `网极API(暂时不可用):`  http://help.api51.cn/352770
-- `Tushare财经库:` http://tushare.org
+- `Wind资讯(默认前复权):`  http://www.dajiangzhang.com
+- `网极API(默认前复权):`  http://help.api51.cn/352770
+- `Tushare财经库(默认前复权):` http://tushare.org
 
 
 支持的数据存储
