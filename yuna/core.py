@@ -2,6 +2,10 @@ import collections
 from datetime import datetime
 import pickle
 
+from asgiref.sync import sync_to_async, async_to_sync
+import asyncio
+import aiohttp
+
 from .setting import *
 from .exceptions import SourceError, DestinationRefuseError, CreateError
 
@@ -61,7 +65,7 @@ class SourceSingleton:
     def call_to_source(cls):
         pass
 
-    def packing(self, stocks, dates):
+    def packing(self, stocks, dates, session):
         pass
 
 
@@ -225,11 +229,21 @@ def run():
         raise CreateError("无法连接数据库（使用setup方法进行相关参数设定，重启shell并引用yuna包，以完成设置）")
 
 
+async def _update(stock, sema, date):
+    async with sema, aiohttp.ClientSession() as session:
+        plane = await sourceSingleton.packing(stock, date, session)
+    await sync_to_async(destinationSingleton.unpacking)(plane)
+
+
 def update(stocks, *date):
     run()
     stocks = all_stocks_list if stocks == 'all' else stocks
-    plane = sourceSingleton.packing(stocks, date)
-    destinationSingleton.unpacking(plane)
+    stocks_con = []
+    loop = asyncio.get_event_loop()
+    sema = asyncio.Semaphore(50)
+    for i in stocks:
+        stocks_con.append(_update(i, sema, date))
+    loop.run_until_complete(asyncio.gather(*stocks_con))
 
 
 def delete():
