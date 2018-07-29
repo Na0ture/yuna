@@ -4,6 +4,7 @@ from urllib.request import *
 import ssl
 import json
 
+from . import logger
 from ..core import SourceSingleton, Plane, Truck
 from ..setting import APP_CODE
 
@@ -59,7 +60,6 @@ class AliyunSource(SourceSingleton):
     @retry
     async def request_to_truck(cls, stock_name, from_query_date, to_query_date, session):
         response = await cls.request_to_response(stock_name, session, from_query_date, to_query_date)
-        print(type(response[0]))
         stock_kline_data = cls.json_kline_to_dict(response[0])
         stock_cwfx_data = cls.json_cwfx_to_dict(response[1])
         return cls.dict_to_truck(stock_name, stock_kline_data, stock_cwfx_data)
@@ -75,6 +75,7 @@ class AliyunSource(SourceSingleton):
         :param dates: 一个包含截止日期前多少天以及截止日期的二元组，例如(5, datetime.datetime(2016, 6, 3))
         :return: 一个是股票k线json数据，一个是股票财务json数据，具体内容见test
         """
+        logger.debug(stock_name)
         async with session.get(cls.url_kline.format(stock_name[:6], stock_name[7:], APP_CODE, *dates)) as request_kline:
             async with session.get(cls.url_cwfx.format(stock_name[:6], stock_name[7:], APP_CODE)) as request_cwfx:
                 return await request_kline.text(), await request_cwfx.text()
@@ -121,8 +122,6 @@ class AliyunSource(SourceSingleton):
             truck.append('High', i[3])
             truck.append('Close', i[2])
             truck.append('Volume', i[6])
-        cls.z += 1
-        print(cls.z)
         return truck
 
     @classmethod

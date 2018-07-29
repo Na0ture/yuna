@@ -1,5 +1,6 @@
 from datetime import datetime
 import tushare as ts
+from . import logger
 from yuna.core import SourceSingleton, Plane, Truck
 
 
@@ -14,6 +15,7 @@ class TuShareSource(SourceSingleton):
         return [i.strftime('%Y-%m-%d') for i in validity_dates]
 
     def packing(self, stocks, dates):
+        logger.debug(stocks)
         from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
         stocks_basics = self.__class__.tushare_basics_to_here()

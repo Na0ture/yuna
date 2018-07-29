@@ -1,6 +1,7 @@
 from datetime import datetime
 import h5py
 import numpy
+from . import logger
 from yuna.core import DestinationSingleton, Truck, Plane, SourceSingleton
 
 
@@ -18,7 +19,6 @@ class Hdf5Destination(DestinationSingleton):
         :param plane: 即将要卸货装载着多个truck的plane实例
         """
         with h5py.File("data.hdf5", 'a') as file:
-            self.z = 0
             for truck in plane:
                 code = truck.get("Code", "None")
                 if code is 'None':
@@ -74,8 +74,7 @@ class Hdf5Destination(DestinationSingleton):
                 temp = numpy.array(volume)
                 ds = g.create_dataset("Volume", temp.shape, float)
                 ds[...] = temp
-                self.z += 1
-                print(self.z)
+                logger.debug(truck.get("Code", "None"))
 
     def sold_out(self):
         pass
