@@ -5,6 +5,9 @@ from yuna.core import SourceSingleton, Plane, Truck
 
 
 class TuShareSource(SourceSingleton):
+    """
+    Tushare财经库，不支持并发
+    """
 
     @classmethod
     def datetime_to_date(cls, validity_dates):

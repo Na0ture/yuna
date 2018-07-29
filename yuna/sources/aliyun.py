@@ -1,7 +1,5 @@
 from datetime import datetime
 import time
-from urllib.request import *
-import ssl
 import json
 
 from . import logger
@@ -27,7 +25,7 @@ def retry(f):
 
 class AliyunSource(SourceSingleton):
     """
-    因网极api样式缘故，获取基本面数据跟k线数据分别各需要一条请求才能获取
+    因网极api样式缘故，获取基本面数据跟k线数据分别各需要一条请求才能获取，支持并发
     """
 
     host = 'http://data.api51.cn/apis'
@@ -72,9 +70,10 @@ class AliyunSource(SourceSingleton):
     async def request_to_response(cls, stock_name, session, *dates):
         """
         :param stock_name: 股票名字，例如'002450.SZ'
-        :param dates: 一个包含截止日期前多少天以及截止日期的二元组，例如(5, datetime.datetime(2016, 6, 3))
+        :param dates: 一个包含截止日期前多少天以及截止日期的二元组，例如(5, '20160603'))
         :return: 一个是股票k线json数据，一个是股票财务json数据，具体内容见test
         """
+
         logger.debug(stock_name)
         async with session.get(cls.url_kline.format(stock_name[:6], stock_name[7:], APP_CODE, *dates)) as request_kline:
             async with session.get(cls.url_cwfx.format(stock_name[:6], stock_name[7:], APP_CODE)) as request_cwfx:
@@ -95,7 +94,6 @@ class AliyunSource(SourceSingleton):
         :param response: 股票财务json数据
         :return: 返回dict类型，具体内容看test部分
         """
-
 
         return json.loads(response)
 

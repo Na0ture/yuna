@@ -20,6 +20,7 @@ class MysqlDestination(DestinationSingleton):
 
         :param plane: 即将要卸货装载着多个truck的plane实例
         """
+
         for truck in plane:
             code = truck.get("Code", "None")[0]
             pe = truck.get("PE", [0])[0]
