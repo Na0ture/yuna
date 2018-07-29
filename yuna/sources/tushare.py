@@ -14,7 +14,7 @@ class TuShareSource(SourceSingleton):
 
         return [i.strftime('%Y-%m-%d') for i in validity_dates]
 
-    def packing(self, stocks, dates):
+    async def packing(self, stocks, dates, session):
         logger.debug(stocks)
         from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
