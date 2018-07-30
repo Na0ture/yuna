@@ -1,15 +1,14 @@
-#coding=utf-8
-
 import unittest
 import datetime
+import asyncio
 from unittest import skipIf
 from unittest.mock import Mock, patch
-
+import aiohttp
 from yuna.sources.aliyun import AliyunSource
 
 SKIP_REAL = True
 ACTUAL_DATES = (5, '20160603')
-ACTUAL_JSON_KLINE = """b'{"errorInfo":"","errorNo":0,"count":1,"results":[{"name":"\\xe5\\xba\\xb7\\xe5\\xbe\\x97\\xe6\\x96\\xb0","code":"002450","market":"SZ","count":4,"array":[[20160531,15.8643,16.3997,16.4498,15.8093,15.8043,247602.9219,808446464.0000,16.1836,16.2952,16.5281,16.5465,16.3524],[20160601,16.4598,16.5398,16.7099,16.4047,16.3997,228630.1250,761680192.0000,16.2246,16.3337,16.4710,16.5185,16.3805],[20160602,16.5130,16.7830,16.9930,16.3430,33.2030,500197.6250,840809024.0000,16.3513,16.3840,16.4434,16.5332,16.4100],[20160603,16.8630,17.0730,17.4830,16.8630,16.7830,606299.1875,1045912384.0000,16.5200,16.4453,16.4716,16.5634,16.4553]]}]}'"""
+ACTUAL_JSON_KLINE = """{"errorInfo":"","errorNo":0,"count":1,"results":[{"name":"康得新","code":"002450","market":"SZ","count":4,"array":[[20160531,15.8643,16.3997,16.4498,15.8093,15.8043,247602.9219,808446464.0000,16.1836,16.2952,16.5281,16.5465,16.3524],[20160601,16.4598,16.5398,16.7099,16.4047,16.3997,228630.1250,761680192.0000,16.2246,16.3337,16.4710,16.5185,16.3805],[20160602,16.5130,16.7830,16.9930,16.3430,33.2030,500197.6250,840809024.0000,16.3513,16.3840,16.4434,16.5332,16.4100],[20160603,16.8630,17.0730,17.4830,16.8630,16.7830,606299.1875,1045912384.0000,16.5200,16.4453,16.4716,16.5634,16.4553]]}]}"""
 ACTUAL_DICT_CWFX = {'errorInfo': '',
                      'errorNo': 0,
                      'results': [
@@ -47,6 +46,7 @@ ACTUAL_TRUCK = """'Close': [16.3997, 16.5398, 16.783, 17.073]
 'PS': [0]
 'PCF': [0]"""
 
+
 class TestAliyun(unittest.TestCase):
 
     @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
@@ -54,10 +54,15 @@ class TestAliyun(unittest.TestCase):
         """
         测试真实服务器的数据跟本地缓存数据是否一致，仅当常量SKIP_REAL为False时生效
         """
-        expected_response = AliyunSource.request_to_response('002450.SZ', 4, "20160603")
-        expected_json = expected_response[0].read()
+
+        async def _request_to_response():
+            async with aiohttp.ClientSession() as session:
+                return await AliyunSource.request_to_response('002450.SZ', session, 4, "20160603")
+        loop = asyncio.get_event_loop()
+        expected_response = loop.run_until_complete(_request_to_response())
+        expected_json = expected_response[0]
         self.assertEqual(str(expected_json), ACTUAL_JSON_KLINE)
-        self.assertTrue(expected_response[1].read())
+        self.assertTrue(expected_response[1])
 
     def test_change_stock(self):
         stocks = ['000001', '600000', '300001']
