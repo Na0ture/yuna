@@ -98,6 +98,8 @@ class Hdf5Destination(DestinationSingleton):
                                 if i >= to_query_date:
                                     to_index = time_array.index(i)
                                     break
+                                else:
+                                    to_index = None
                         else:
                             raise Exception
                     else:
