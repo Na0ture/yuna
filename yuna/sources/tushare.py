@@ -1,5 +1,8 @@
 from datetime import datetime
-import tushare as ts
+try:
+    import tushare as ts
+except ImportError:
+    pass
 from . import logger
 from yuna.core import SourceSingleton, Plane, Truck
 
