@@ -1,5 +1,5 @@
-import datetime
 import math
+from . import logger
 
 try:
     import WindPy
@@ -15,7 +15,8 @@ class WindpySource(SourceSingleton):
     def call_to_source(cls):
         WindPy.w.start()
 
-    def packing(self, stocks, dates):
+    async def packing(self, stocks, dates, session):
+        logger.debug(stocks)
         stocks_list = super().change_stock(stocks)
         from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()

@@ -1,6 +1,7 @@
 from datetime import datetime
 import h5py
 import numpy
+from . import logger
 from yuna.core import DestinationSingleton, Truck, Plane, SourceSingleton
 
 
@@ -17,8 +18,8 @@ class Hdf5Destination(DestinationSingleton):
 
         :param plane: 即将要卸货装载着多个truck的plane实例
         """
+
         with h5py.File("data.hdf5", 'a') as file:
-            self.z = 0
             for truck in plane:
                 code = truck.get("Code", "None")
                 if code is 'None':
@@ -32,50 +33,38 @@ class Hdf5Destination(DestinationSingleton):
                 high = truck.get("High", [0])
                 close = truck.get("Close", [0])
                 volume = truck.get("Volume", [0])
-
                 g = file.create_group(code[0])
-
                 temp = numpy.array(code)
                 ds = g.create_dataset("Code", temp.shape, dtype=h5py.special_dtype(vlen=str))
                 ds[...] = temp
-
                 temp = numpy.array(pe)
                 ds = g.create_dataset("PE", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(pb)
                 ds = g.create_dataset("PB", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(ps)
                 ds = g.create_dataset("PS", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(pcf)
                 ds = g.create_dataset("PCF", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(list(map(lambda x: x.strftime("%Y%m%d"), time)))
                 ds = g.create_dataset("Times", temp.shape, dtype=h5py.special_dtype(vlen=str))
                 ds[...] = temp
-
                 temp = numpy.array(low)
                 ds = g.create_dataset("Low", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(high)
                 ds = g.create_dataset("High", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(close)
                 ds = g.create_dataset("Close", temp.shape, float)
                 ds[...] = temp
-
                 temp = numpy.array(volume)
                 ds = g.create_dataset("Volume", temp.shape, float)
                 ds[...] = temp
-                self.z += 1
-                print(self.z)
+                logger.debug(truck.get("Code", "None"))
 
     def sold_out(self):
         pass

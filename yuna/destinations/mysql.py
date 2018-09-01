@@ -1,5 +1,6 @@
 from datetime import datetime
 from peewee import *
+from . import logger
 from yuna.core import DestinationSingleton, Truck, Plane
 from ..setting import HOST, PORT, USER, PASS_WD, DB
 
@@ -19,6 +20,7 @@ class MysqlDestination(DestinationSingleton):
 
         :param plane: 即将要卸货装载着多个truck的plane实例
         """
+
         for truck in plane:
             code = truck.get("Code", "None")[0]
             pe = truck.get("PE", [0])[0]
@@ -39,6 +41,7 @@ class MysqlDestination(DestinationSingleton):
             for i in range(data_length):
                 Details.create(basic=Basic.get(Basic.code == code).id, time=time[i], low=low[i],
                                high=high[i], close=close[i], volume=volume[i])
+            logger.debug(truck.get("Code", "None")[0])
 
     def sold_out(self):
         self.db.drop_tables([Basic, Details])

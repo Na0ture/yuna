@@ -1,3 +1,7 @@
+"""
+测试Wind资讯，使用数据为股票康得新16年5月31至16年6月3日的k线数据，以检验数据是否前复权
+"""
+
 import unittest
 import datetime
 from unittest import skipIf
