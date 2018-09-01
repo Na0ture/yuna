@@ -9,6 +9,8 @@ class TuShareSource(SourceSingleton):
     Tushare财经库，不支持并发
     """
 
+    stocks_basics = None
+
     @classmethod
     def datetime_to_date(cls, validity_dates):
         """
@@ -21,10 +23,10 @@ class TuShareSource(SourceSingleton):
         logger.debug(stocks)
         from_query_date, to_query_date = self.__class__.datetime_to_date(self.__class__.validate_date(dates))
         plane = Plane()
-        stocks_basics = self.__class__.tushare_basics_to_here()
+        self.__class__.is_stocks_basics()
         for stock_name in [stocks]:
             stock_k = self.__class__.tushare_k_to_here(stock_name, from_query_date, to_query_date)
-            plane.append(self.__class__.tushare_to_truck(stock_name, stock_k, stocks_basics))
+            plane.append(self.__class__.tushare_to_truck(stock_name, stock_k, self.__class__.stocks_basics))
         return plane
 
     @classmethod
@@ -58,6 +60,11 @@ class TuShareSource(SourceSingleton):
         """
 
         return ts.get_stock_basics()
+
+    @classmethod
+    def is_stocks_basics(cls):
+        if cls.stocks_basics is None:
+            cls.stocks_basics = cls.tushare_basics_to_here()
 
     @classmethod
     def tushare_k_to_here(cls, stock_name, from_query_date, to_query_date):
