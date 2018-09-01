@@ -1,8 +1,11 @@
+"""
+测试网极API，使用数据为股票康得新16年5月31至16年6月3日的k线数据，以检验数据是否前复权
+"""
+
 import unittest
 import datetime
 import asyncio
 from unittest import skipIf
-from unittest.mock import Mock, patch
 import aiohttp
 from yuna.sources.aliyun import AliyunSource
 
