@@ -1,6 +1,7 @@
 import collections
 from datetime import datetime
-import pickle
+import re
+from urllib import request
 
 from asgiref.sync import sync_to_async, async_to_sync
 import asyncio
@@ -161,8 +162,16 @@ from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
 from .sources.tushare import TuShareSource
 
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)) + '/all.pkl'), 'rb') as i:
-    all_stocks_list = pickle.load(i)
+
+def get_stocks_list_from_eastmoney():
+    """
+    获取A股所有上司公司的股票代码，源自东方财富页面
+    """
+    response = request.urlopen("http://quote.eastmoney.com/stocklist.html")
+    response_data = str(response.read())
+    get_stocks_code_patterns = re.compile(r"\(([603]\d{5})\)")
+    set_stocks_list(get_stocks_code_patterns.findall(response_data))
+    return get_stocks_list()
 
 
 class TechnicalIndicator:
@@ -237,7 +246,7 @@ async def _update(stock, sema, date):
 
 def update(stocks, *date):
     run()
-    stocks = all_stocks_list if stocks == 'all' else stocks
+    stocks = get_stocks_list_from_eastmoney() if stocks == 'all' else stocks
     stocks_con = []
     loop = asyncio.get_event_loop()
     sema = asyncio.Semaphore(50)
@@ -260,7 +269,7 @@ def query(stocks, string, from_query_date=None, to_query_date=None):
     run()
     methods = string.split(',')
     methods.reverse()
-    data = all_stocks_list if stocks == 'all' else stocks
+    data = get_stocks_list() if stocks == 'all' else stocks
     while True:
         try:
             method = methods.pop()

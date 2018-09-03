@@ -1,4 +1,4 @@
-import os, json, sys, glob
+import os, json, sys, glob, pickle
 from yuna.exceptions import SetiingError
 
 
@@ -85,3 +85,12 @@ def setup(**kwargs):
     with open(config_file, 'w') as json_config_file:
         json.dump(config, json_config_file, indent=2)
 
+
+def set_stocks_list(all_stocks_list):
+    with open(os.path.join(_yuna_dir + '/all_stock_lists.pkl'), 'wb') as i:
+        pickle.dump(all_stocks_list, i)
+
+
+def get_stocks_list():
+    with open(os.path.join(_yuna_dir + '/all_stock_lists.pkl'), 'rb') as i:
+        return pickle.load(i)
