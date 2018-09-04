@@ -1,5 +1,8 @@
 from datetime import datetime
-import h5py
+try:
+    import h5py
+except ImportError:
+    pass
 import numpy
 from . import logger
 from yuna.core import DestinationSingleton, Truck, Plane, SourceSingleton
