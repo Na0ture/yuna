@@ -10,9 +10,9 @@ actual_date = '[datetime.datetime(2018, 1, 1, 0, 0), datetime.datetime(2018, 3, 
 class TestCore(unittest.TestCase):
 
     def test_change_stock(self):
-        stocks = ['000001', '600000', '300001']
-        expected_change_stock = SourceSingleton.change_stock(stocks)
-        self.assertEqual(expected_change_stock, ['000001.SZ', '600000.SH', '300001.SZ'])
+        stocks = '000001'
+        expected_change_stock = SourceSingleton.alter_stock_code(stocks)
+        self.assertEqual(expected_change_stock, '000001.SZ')
 
     def test_validate_date(self):
         date = ['20180101', '20180301']

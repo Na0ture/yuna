@@ -71,9 +71,9 @@ class Hdf5Destination(DestinationSingleton):
 
     def find_out(self, stocks, from_query_date, to_query_date):
         plane = Plane()
-        stocks = SourceSingleton.change_stock(stocks)
         with h5py.File("data.hdf5", 'r') as file:
             for stock in stocks:
+                stock = SourceSingleton.alter_stock_code(stock)
                 g = file.get(stock)
                 time_array = g.get('Times')[...].tolist()
                 if from_query_date is not None:
