@@ -67,11 +67,6 @@ class TestAliyun(unittest.TestCase):
         self.assertEqual(str(expected_json), ACTUAL_JSON_KLINE)
         self.assertTrue(expected_response[1])
 
-    def test_change_stock(self):
-        stocks = ['000001', '600000', '300001']
-        expected_change_stock = AliyunSource.change_stock(stocks)
-        self.assertEqual(expected_change_stock, ['000001.SZ', '600000.SH', '300001.SZ'])
-
     def test_datetime_to_date(self):
         dates = [5, datetime.datetime(2016, 6, 3)]
         expected_dates = AliyunSource.datetime_to_date(dates)

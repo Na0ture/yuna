@@ -44,14 +44,14 @@ class TuShareSource(SourceSingleton):
         """
 
         truck = Truck()
-        truck.extend('Code', cls.change_stock(stock_name))
+        truck.append('Code', super().alter_stock_code(stock_name))
         truck.extend('Times', list(map(lambda x: datetime.strptime(x, '%Y-%m-%d'), stock_k.date.tolist())))
         truck.extend('Low', stock_k.low)
         truck.extend('High', stock_k.high)
         truck.extend('Close', stock_k.close)
         truck.extend('Volume', stock_k.volume)
-        truck.extend('PE', [stocks_basics.get('pe').get(stock_name)])
-        truck.extend('PB', [stocks_basics.get('pb').get(stock_name)])
+        truck.extend('PE', [stocks_basics.get('pe').get(stock_name) or 0])
+        truck.extend('PB', [stocks_basics.get('pb').get(stock_name) or 0])
         truck.extend('PS', [0])
         truck.extend('PCF', [0])
         return truck

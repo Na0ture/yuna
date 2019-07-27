@@ -5,6 +5,7 @@ import json
 from . import logger
 from ..core import SourceSingleton, Plane, Truck
 from ..setting import APP_CODE
+from yuna.exceptions import *
 
 
 def retry(f):
@@ -47,11 +48,11 @@ class AliyunSource(SourceSingleton):
     z = 0
 
     async def packing(self, stocks, dates, session):
-        stocks_list = super().change_stock(stocks)
-        time_delta, to_query_date = self.__class__.datetime_to_date(self.__class__.calc_time_delta(self.__class__.validate_date(dates)))
+        stock_code = super().alter_stock_code(stocks)
+        time_delta, to_query_date = self.__class__.datetime_to_date(
+            self.__class__.calc_time_delta(self.__class__.validate_date(dates)))
         plane = Plane()
-        for stock_name in stocks_list:
-            plane.append(await self.__class__.request_to_truck(stock_name, time_delta, to_query_date, session))
+        plane.append(await self.__class__.request_to_truck(stock_code, time_delta, to_query_date, session))
         return plane
 
     @classmethod

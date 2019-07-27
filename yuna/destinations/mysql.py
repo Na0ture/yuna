@@ -4,7 +4,7 @@ try:
 except ImportError:
     pass
 from . import logger
-from yuna.core import DestinationSingleton, Truck, Plane
+from yuna.core import DestinationSingleton, Truck, Plane, SourceSingleton
 from ..setting import HOST, PORT, USER, PASS_WD, DB
 
 
@@ -55,7 +55,8 @@ class MysqlDestination(DestinationSingleton):
             stocks = [stocks]
         for stock in stocks:
             truck = Truck()
-            basic = Basic.get(fn.Substr(Basic.code, 1, 6) == stock)
+            stock = SourceSingleton.alter_stock_code(stock)
+            basic = Basic.get(Basic.code == stock)
             truck.append("Code", basic.code)
             truck.append("PE", basic.PE)
             truck.append("PB", basic.PB)
@@ -65,14 +66,14 @@ class MysqlDestination(DestinationSingleton):
                 _from_query_date = from_query_date[0:4] + '-' + from_query_date[4:6] + '-' + from_query_date[6:]
                 if to_query_date is not None:
                     _to_query_date = to_query_date[0:4] + '-' + to_query_date[4:6] + '-' + to_query_date[6:]
-                    details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).where(
+                    details = Details.select().join(Basic).where(Basic.code == stock).where(
                         Details.time > _from_query_date).where(
                         Details.time < _to_query_date).order_by(Details.time)
                 else:
-                    details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).where(
+                    details = Details.select().join(Basic).where(Basic.code == stock).where(
                         Details.time > _from_query_date).order_by(Details.time)
             else:
-                details = Details.select().join(Basic).where(fn.Substr(Basic.code, 1, 6) == stock).order_by(
+                details = Details.select().join(Basic).where(Basic.code == stock).order_by(
                     Details.time)
             for i in details:
                 truck.append("Times", i.time)

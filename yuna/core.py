@@ -33,13 +33,28 @@ class SourceSingleton:
             raise SourceError("连接数据源出错")
 
     @classmethod
-    def change_stock(cls, stocks):
+    def alter_stock_code(cls, stock_code):
+        """
+        此函数是把诸如"600001","sh"等转换成"600001.SH","000001.SH"的转换函数
+
+        :param stock_code: 输入时的股票或者大盘对应的字符串
+        :return: 修改后的结果
+        """
         try:
-            if isinstance(stocks, str):
-                stocks_list = [stocks + '.SH' if stocks[0] == '6' else stocks + '.SZ']
+            if stock_code == 'sh':
+                return "000001.SH"
+            elif stock_code == 'sz':
+                return "399001.SZ"
+            elif stock_code == 'hs300':
+                return "000300.SH"
+            elif stock_code == 'sz50':
+                return "000016.SH"
+            elif stock_code == 'zxb':
+                return "399005.SZ"
+            elif stock_code == 'cyb':
+                return "399006.SZ"
             else:
-                stocks_list = [stock + '.SH' if stock[0] == '6' else stock + '.SZ' for stock in stocks]
-            return stocks_list
+                return stock_code + '.SH' if stock_code[0] == '6' else stock_code + '.SZ'
         except Exception:
             raise SourceError("转换股票名字时出错")
 
@@ -245,6 +260,7 @@ async def _update(stock, sema, date):
 
 
 def update(stocks, *date):
+    """假设stocks是list，还没有完善当传递的是一个str的情形"""
     run()
     stocks = get_stocks_list_from_eastmoney() if stocks == 'all' else stocks
     stocks_con = []
