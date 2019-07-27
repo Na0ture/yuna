@@ -1,5 +1,8 @@
 from datetime import datetime
-from peewee import *
+try:
+    from peewee import *
+except ImportError:
+    pass
 from . import logger
 from yuna.core import DestinationSingleton, Truck, Plane
 from ..setting import HOST, PORT, USER, PASS_WD, DB
