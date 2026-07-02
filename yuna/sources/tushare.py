@@ -28,6 +28,11 @@ class TuShareSource(SourceSingleton):
         cls._pro = ts.pro_api(TUSHARE_TOKEN)
 
     @classmethod
+    def _ensure_pro(cls):
+        if cls._pro is None:
+            cls.call_to_source()
+
+    @classmethod
     def datetime_to_date(cls, validity_dates):
         return [i.strftime('%Y%m%d') for i in validity_dates]
 
@@ -66,10 +71,16 @@ class TuShareSource(SourceSingleton):
         return truck
 
     @classmethod
-    def tushare_k_to_here(cls, stock_name, from_query_date, to_query_date):
+    def _get_ts_code(cls, stock_name):
         ts_code = stock_name if '.' in stock_name else stock_name + '.SZ'
-        if ts_code[-3] == '6':
+        if ts_code[0] == '6':
             ts_code = stock_name + '.SH'
+        return ts_code
+
+    @classmethod
+    def tushare_k_to_here(cls, stock_name, from_query_date, to_query_date):
+        cls._ensure_pro()
+        ts_code = cls._get_ts_code(stock_name)
         try:
             df = cls._pro.daily(ts_code=ts_code, start_date=from_query_date, end_date=to_query_date)
             return df
@@ -79,9 +90,8 @@ class TuShareSource(SourceSingleton):
 
     @classmethod
     def tushare_basics_to_here(cls, stock_name, from_query_date, to_query_date):
-        ts_code = stock_name if '.' in stock_name else stock_name + '.SZ'
-        if ts_code[-3] == '6':
-            ts_code = stock_name + '.SH'
+        cls._ensure_pro()
+        ts_code = cls._get_ts_code(stock_name)
         try:
             df = cls._pro.daily_basic(ts_code=ts_code, start_date=from_query_date, end_date=to_query_date)
             return df

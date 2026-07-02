@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yuna"
-version = "0.4.1"
+version = "0.4.2"
 description = "A quantitative analyse for Assets"
 authors = [
     { name = "Lv Zhi", email = "279094354@qq.com" },
