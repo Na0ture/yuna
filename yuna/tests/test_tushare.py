@@ -2,13 +2,10 @@
 测试Tushare财经库，使用数据为股票康得新16年5月31至16年6月3日的k线数据，以检验数据是否前复权
 """
 
-import unittest
 import datetime
-from unittest import skipIf
-from unittest.mock import Mock, patch, DEFAULT
 
 import pandas as pd
-
+import pytest
 from yuna.sources.tushare import TuShareSource
 
 SKIP_REAL = True
@@ -42,26 +39,26 @@ ACTUAL_TRUCK = """'Close': [16.413, 16.552, 16.791, 17.08]
 'PCF': [0]"""
 
 
-class TestTuShare(unittest.TestCase):
+class TestTuShare:
 
-    @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
+    @pytest.mark.skipif(SKIP_REAL, reason='跳过与真实服务器进行数据核对')
     def test_tushare_k_to_here(self):
         expected_response = TuShareSource.tushare_k_to_here('002450', '2016-05-31', '2016-06-03')
-        self.assertEqual(list(expected_response.close), ACTUAL_CLOSE)
-        self.assertEqual(list(expected_response.high), ACTUAL_HIGH)
-        self.assertEqual(list(expected_response.low), ACTUAL_LOW)
-        self.assertEqual(list(expected_response.volume), ACTUAL_VOLUME)
+        assert list(expected_response.close) == ACTUAL_CLOSE
+        assert list(expected_response.high) == ACTUAL_HIGH
+        assert list(expected_response.low) == ACTUAL_LOW
+        assert list(expected_response.volume) == ACTUAL_VOLUME
 
     def test_change_date(self):
         dates = [datetime.datetime(2016, 5, 31), datetime.datetime(2016, 6, 3)]
         expected_dates = TuShareSource.datetime_to_date(dates)
-        self.assertEqual(expected_dates, ACTUAL_DATES)
+        assert expected_dates == ACTUAL_DATES
 
-    @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
+    @pytest.mark.skipif(SKIP_REAL, reason='跳过与真实服务器进行数据核对')
     def test_tushare_basics_to_here(self):
         expected_response = TuShareSource.tushare_basics_to_here('002450', '20160531', '20160603')
-        self.assertIsNotNone(expected_response)
+        assert expected_response is not None
 
     def test_tushare_to_truck(self):
         expected_truck = TuShareSource.tushare_to_truck('002450', ACTUAL_KLINE_DF, ACTUAL_BASIC_DF)
-        self.assertEqual(str(expected_truck), ACTUAL_TRUCK)
+        assert str(expected_truck) == ACTUAL_TRUCK

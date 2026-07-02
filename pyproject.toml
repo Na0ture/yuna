@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yuna"
-version = "0.4.0"
+version = "0.4.1"
 description = "A quantitative analyse for Assets"
 authors = [
     { name = "Lv Zhi", email = "279094354@qq.com" },
@@ -38,6 +38,12 @@ Homepage = "https://github.com/Na0ture/yuna"
 
 [project.scripts]
 yuna = "yuna_cli.cli:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["yuna/tests"]
+markers = [
+    "real: tests that hit real servers (deselect with '-m \"not real\"')",
+]
 
 [tool.setuptools]
 packages = { find = { include = ["yuna", "yuna.*", "yuna_cli", "yuna_cli.*"] } }

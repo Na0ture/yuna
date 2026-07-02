@@ -2,6 +2,13 @@
 历史
 ------------
 
+0.4.1（2026-07-02）
+++++++++++++++++++
+
+* 迁移测试框架: unittest → pytest
+* 补充 pytest 配置到 pyproject.toml
+* 添加 yuna/tests/__init__.py 支持 VS Code Test Explorer
+
 0.4.0（2026-07-02）
 ++++++++++++++++++
 

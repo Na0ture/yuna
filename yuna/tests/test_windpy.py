@@ -2,10 +2,10 @@
 测试Wind资讯，使用数据为股票康得新16年5月31至16年6月3日的k线数据，以检验数据是否前复权
 """
 
-import unittest
 import datetime
-from unittest import skipIf
 from unittest.mock import Mock, patch
+
+import pytest
 from yuna.sources.windpy import WindpySource
 
 
@@ -38,27 +38,23 @@ ACTUAL_TRUCK = "'Close': [16.4117923303386, 16.551128347697446, 16.7904215877582
                "'PCF': [9.016640663146973]"
 
 
-class TestWindpy(unittest.TestCase):
+class TestWindpy:
 
-    @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
+    @pytest.mark.skipif(SKIP_REAL, reason='跳过与真实服务器进行数据核对')
     def test_integration_contract(self):
-        expected_response = WindpySource.wind_to_here('002450.SZ', "2016-05-31", "2016-06-03")
-        self.assertTrue(expected_response)
-        self.assertEqual(expected_response.Fields, ACTUAL_FIELDS)
-        self.assertEqual(expected_response.Data, ACTUAL_DATA)
-        self.assertEqual(expected_response.Times, ACTUAL_TIMES)
+        expected_response = WindpySource.wind_to_here('002450.SZ', '2016-05-31', '2016-06-03')
+        assert expected_response
+        assert expected_response.Fields == ACTUAL_FIELDS
+        assert expected_response.Data == ACTUAL_DATA
+        assert expected_response.Times == ACTUAL_TIMES
 
     def test_change_date(self):
         dates = [datetime.datetime(2016, 5, 31), datetime.datetime(2016, 6, 3)]
         expected_dates = WindpySource.datetime_to_date(dates)
-        self.assertEqual(expected_dates, ACTUAL_DATES)
+        assert expected_dates == ACTUAL_DATES
 
     @patch.object(WindpySource, 'wind_to_here')
     def test_list_to_truck(self, mock_get):
         mock_get.return_value = Mock(Times=ACTUAL_TIMES, Data=ACTUAL_DATA)
         expected_truck = WindpySource.list_to_truck('002450.SZ', mock_get.return_value)
-        self.assertEqual(str(expected_truck), ACTUAL_TRUCK)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert str(expected_truck) == ACTUAL_TRUCK

@@ -2,11 +2,11 @@
 测试网极API，使用数据为股票康得新16年5月31至16年6月3日的k线数据，以检验数据是否前复权
 """
 
-import unittest
 import datetime
 import asyncio
-from unittest import skipIf
+
 import aiohttp
+import pytest
 from yuna.sources.aliyun import AliyunSource
 
 SKIP_REAL = True
@@ -50,37 +50,29 @@ ACTUAL_TRUCK = """'Close': [16.3997, 16.5398, 16.783, 17.073]
 'PCF': [0]"""
 
 
-class TestAliyun(unittest.TestCase):
+class TestAliyun:
 
-    @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
+    @pytest.mark.skipif(SKIP_REAL, reason='跳过与真实服务器进行数据核对')
     def test_integration_contract(self):
-        """
-        测试真实服务器的数据跟本地缓存数据是否一致，仅当常量SKIP_REAL为False时生效
-        """
-
         async def _request_to_response():
             async with aiohttp.ClientSession() as session:
-                return await AliyunSource.request_to_response('002450.SZ', session, 4, "20160603")
+                return await AliyunSource.request_to_response('002450.SZ', session, 4, '20160603')
         loop = asyncio.get_event_loop()
         expected_response = loop.run_until_complete(_request_to_response())
         expected_json = expected_response[0]
-        self.assertEqual(str(expected_json), ACTUAL_JSON_KLINE)
-        self.assertTrue(expected_response[1])
+        assert str(expected_json) == ACTUAL_JSON_KLINE
+        assert expected_response[1]
 
     def test_change_stock(self):
         stocks = ['000001', '600000', '300001']
         expected_change_stock = AliyunSource.change_stock(stocks)
-        self.assertEqual(expected_change_stock, ['000001.SZ', '600000.SH', '300001.SZ'])
+        assert expected_change_stock == ['000001.SZ', '600000.SH', '300001.SZ']
 
     def test_datetime_to_date(self):
         dates = [5, datetime.datetime(2016, 6, 3)]
         expected_dates = AliyunSource.datetime_to_date(dates)
-        self.assertEqual(expected_dates, ACTUAL_DATES)
+        assert expected_dates == ACTUAL_DATES
 
     def test_dict_to_truck(self):
         expected_truck = AliyunSource.dict_to_truck('002450.SZ', ACTUAL_DICT_KLINE, ACTUAL_DICT_CWFX)
-        self.assertEqual(str(expected_truck), ACTUAL_TRUCK)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert str(expected_truck) == ACTUAL_TRUCK
