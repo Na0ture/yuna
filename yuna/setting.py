@@ -2,6 +2,7 @@ import os
 import json
 import sys
 import glob
+import shutil
 
 from yuna.exceptions import SettingError
 
@@ -57,6 +58,20 @@ DESTINATION = config['DESTINATION']
 _init_workspace_called = False
 
 
+def _seed_samples(workspace):
+    """如果用户 indicators/visual 目录为空，从内置 sample 目录复制默认算法"""
+    pkg_dir = os.path.dirname(os.path.abspath(__file__))
+    sample_dir = os.path.join(pkg_dir, '..', 'sample')
+    for subdir in ('indicators', 'visual'):
+        user_dir = os.path.join(workspace, subdir)
+        if not glob.glob(os.path.join(user_dir, '[a-z]*.py')):
+            src = os.path.join(sample_dir, subdir)
+            if os.path.isdir(src):
+                for f in os.listdir(src):
+                    if f.endswith('.py') and not f.startswith('_'):
+                        shutil.copy2(os.path.join(src, f), os.path.join(user_dir, f))
+
+
 def _init_workspace():
     global _init_workspace_called
     if _init_workspace_called:
@@ -69,6 +84,9 @@ def _init_workspace():
 
     if workspace not in sys.path:
         sys.path.insert(0, workspace)
+
+    # 如果用户目录为空，从内置 sample 复制默认文件
+    _seed_samples(workspace)
 
     for subdir in ('indicators', 'visual'):
         target = os.path.join(workspace, subdir)
@@ -114,6 +132,8 @@ def setup(**kwargs):
 
     with open(_CONFIG_FILE, 'w') as f:
         json.dump(config, f, indent=2)
+
+    globals().update(config)
 
 
 _init_workspace()

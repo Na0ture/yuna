@@ -258,7 +258,10 @@ async def _update(stock, sema, date):
 
 def update(stocks, *date):
     run()
-    stocks = all_stocks_list if stocks == 'all' else stocks
+    if stocks == 'all':
+        stocks = all_stocks_list
+    elif isinstance(stocks, str):
+        stocks = [stocks]
     stocks_con = []
     loop = asyncio.get_event_loop()
     sema = asyncio.Semaphore(50)

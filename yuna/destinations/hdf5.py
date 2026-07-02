@@ -33,6 +33,8 @@ class Hdf5Destination(DestinationSingleton):
                 high = truck.get("High", [0])
                 close = truck.get("Close", [0])
                 volume = truck.get("Volume", [0])
+                if code[0] in file:
+                    del file[code[0]]
                 g = file.create_group(code[0])
                 temp = numpy.array(code)
                 ds = g.create_dataset("Code", temp.shape, dtype=h5py.special_dtype(vlen=str))
@@ -75,7 +77,7 @@ class Hdf5Destination(DestinationSingleton):
         with h5py.File("data.hdf5", 'r') as file:
             for stock in stocks:
                 g = file.get(stock)
-                time_array = g.get('Times')[...].tolist()
+                time_array = [t.decode() if isinstance(t, bytes) else t for t in g.get('Times')[...].tolist()]
                 if from_query_date is not None:
                     if to_query_date is not None:
                         for i in time_array:
@@ -101,7 +103,8 @@ class Hdf5Destination(DestinationSingleton):
                     from_index = None
                     to_index = None
                 truck = Truck()
-                truck.append('Code', g.get('Code')[...][0])
+                code_val = g.get('Code')[...][0]
+                truck.append('Code', code_val.decode() if isinstance(code_val, bytes) else code_val)
                 truck.append('PE', g.get('PE')[...][0])
                 truck.append('PB', g.get('PB')[...][0])
                 truck.append('PS', g.get('PS')[...][0])
