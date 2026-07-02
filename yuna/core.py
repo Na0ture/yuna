@@ -161,6 +161,16 @@ from .sources.aliyun import AliyunSource
 from .sources.windpy import WindpySource
 from .sources.tushare import TuShareSource
 
+_SOURCE_MAP: dict[str, type[SourceSingleton]] = {
+    'AliyunSource': AliyunSource,
+    'WindpySource': WindpySource,
+    'TuShareSource': TuShareSource,
+}
+_DEST_MAP: dict[str, type[DestinationSingleton]] = {
+    'MysqlDestination': MysqlDestination,
+    'Hdf5Destination': Hdf5Destination,
+}
+
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)) + '/all.pkl'), 'rb') as i:
     all_stocks_list = pickle.load(i)
 
@@ -219,14 +229,25 @@ _all_indicators = indicators._all_indicators
 
 
 def run():
+    global sourceSingleton, destinationSingleton
+    from .setting import _init_workspace, SOURCE, DESTINATION
+    _init_workspace()
+
+    source_cls = _SOURCE_MAP.get(SOURCE)
+    if source_cls is None:
+        raise CreateError(f"未知数据源: {SOURCE}（使用setup方法进行相关参数设定）")
     try:
-        exec(f"sourceSingleton = globals().get(SOURCE, None)()", globals())
-    except Exception:
-        raise CreateError("无法连接数据源（使用setup方法进行相关参数设定，重启shell并引用yuna包，以完成设置）")
+        sourceSingleton = source_cls()
+    except Exception as e:
+        raise CreateError("无法连接数据源") from e
+
+    dest_cls = _DEST_MAP.get(DESTINATION)
+    if dest_cls is None:
+        raise CreateError(f"未知存储后端: {DESTINATION}（使用setup方法进行相关参数设定）")
     try:
-        exec(f"destinationSingleton = globals().get(DESTINATION, None)()", globals())
-    except Exception:
-        raise CreateError("无法连接数据库（使用setup方法进行相关参数设定，重启shell并引用yuna包，以完成设置）")
+        destinationSingleton = dest_cls()
+    except Exception as e:
+        raise CreateError("无法连接数据库") from e
 
 
 async def _update(stock, sema, date):

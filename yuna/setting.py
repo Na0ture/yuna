@@ -1,87 +1,120 @@
-import os, json, sys, glob
-from yuna.exceptions import SetiingError
+import os
+import json
+import sys
+import glob
+
+from yuna.exceptions import SettingError
 
 
-_yuna_base_dir = os.path.expanduser('~')
-if not os.access(_yuna_base_dir, os.W_OK):
-    _yuna_base_dir = '/temp'
-_yuna_dir = os.path.join(_yuna_base_dir, 'yuna')
-if not os.path.exists(_yuna_dir):
-    try:
-        os.makedirs(_yuna_dir)
-    except OSError:
-        raise SetiingError("无法创建文件目录")
-config_file = os.path.join(_yuna_dir, "config.json")
+_CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.yuna')
+_CONFIG_FILE = os.path.join(_CONFIG_DIR, 'config.json')
 
-if os.path.isfile(config_file):
-    with open(config_file) as json_config_file:
-        config = json.load(json_config_file)
-    HOST = config['HOST']
-    PORT = config['PORT']
-    USER = config['USER']
-    PASS_WD = config['PASS_WD']
-    DB = config['DB']
-    APP_CODE = config['APP_CODE']
-    SOURCE = config['SOURCE']
-    DESTINATION = config['DESTINATION']
-else:
+_DEFAULT_CONFIG = {
+    'HOST': '',
+    'PORT': 0,
+    'USER': '',
+    'PASS_WD': '',
+    'DB': '',
+    'APP_CODE': '',
+    'TUSHARE_TOKEN': '',
+    'SOURCE': '',
+    'DESTINATION': '',
+}
+
+
+def _ensure_config_dir():
+    if not os.path.exists(_CONFIG_DIR):
+        try:
+            os.makedirs(_CONFIG_DIR)
+        except OSError:
+            raise SettingError('无法创建配置目录')
+
+
+def _load_config():
+    _ensure_config_dir()
     config = {}
-    config['HOST'] = HOST = ''
-    config['PORT'] = PORT = 0
-    config['USER'] = USER = ''
-    config['PASS_WD'] = PASS_WD = ''
-    config['DB'] = DB = ''
-    config['APP_CODE'] = APP_CODE = ''
-    config['SOURCE'] = SOURCE = ''
-    config['DESTINATION'] = DESTINATION = ''
+    config.update(_DEFAULT_CONFIG)
+    if os.path.isfile(_CONFIG_FILE):
+        with open(_CONFIG_FILE) as f:
+            stored = json.load(f)
+            config.update(stored)
+    with open(_CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+    return config
 
-with open(config_file, 'w') as json_config_file:
-    json.dump(config, json_config_file, indent=2)
 
-_temp = os.getcwd()
-os.chdir(os.path.join(os.path.expanduser('~'), 'yuna'))
-os.makedirs('indicators', exist_ok=True)
-os.makedirs('visual', exist_ok=True)
-os.chdir(os.path.join(os.path.expanduser('~'), 'yuna/indicators'))
+config = _load_config()
+HOST = config['HOST']
+PORT = config['PORT']
+USER = config['USER']
+PASS_WD = config['PASS_WD']
+DB = config['DB']
+APP_CODE = config['APP_CODE']
+TUSHARE_TOKEN = config['TUSHARE_TOKEN']
+SOURCE = config['SOURCE']
+DESTINATION = config['DESTINATION']
 
-if glob.glob("[a-z]*.py"):
-    with open('__init__.py', 'w') as i:
-        i.write("from . import " + ','.join([f"{i.split('.')[0]}" for i in glob.glob("[a-z]*.py")]) + "\n"
-                "\n"
-                "_all_indicators = {\n" +
-                ''.join([f"    '{i.split('.')[0]}': {i.split('.')[0]}.{i.split('.')[0].title()},\n"
-                         for i in glob.glob("[a-z]*.py")]) +
-                "}\n")
-else:
-    with open('__init__.py', 'w') as i:
-        i.write("_all_indicators = {}\n")
+_init_workspace_called = False
 
-os.chdir(os.path.join(os.path.expanduser('~'), 'yuna/visual'))
 
-if glob.glob("[a-z]*.py"):
-    with open('__init__.py', 'w') as i:
-        i.write("from . import " + ','.join([f"{i.split('.')[0]}" for i in glob.glob("[a-z]*.py")]) + "\n"
-                "\n"
-                "_visual_indicators = {\n" +
-                ''.join([f"    '{i.split('.')[0]}': {i.split('.')[0]}.{i.split('.')[0].title()},\n"
-                         for i in glob.glob("[a-z]*.py")]) +
-                "}\n")
-else:
-    with open('__init__.py', 'w') as i:
-        i.write("_visual_indicators = {}\n")
+def _init_workspace():
+    global _init_workspace_called
+    if _init_workspace_called:
+        return
+    _init_workspace_called = True
 
-sys.path.append(os.path.join(os.path.expanduser('~'), 'yuna'))
-os.chdir(_temp)
+    workspace = os.path.join(os.path.expanduser('~'), 'yuna')
+    os.makedirs(os.path.join(workspace, 'indicators'), exist_ok=True)
+    os.makedirs(os.path.join(workspace, 'visual'), exist_ok=True)
+
+    if workspace not in sys.path:
+        sys.path.insert(0, workspace)
+
+    for subdir in ('indicators', 'visual'):
+        target = os.path.join(workspace, subdir)
+        py_files = sorted(glob.glob(os.path.join(target, '[a-z]*.py')))
+        init_path = os.path.join(target, '__init__.py')
+        mod_names = [os.path.splitext(os.path.basename(f))[0] for f in py_files]
+
+        if subdir == 'indicators':
+            if mod_names:
+                content = (
+                    'from . import ' + ','.join(mod_names) + '\n'
+                    '\n'
+                    '_all_indicators = {\n'
+                    + ''.join(f"    '{m}': {m}.{m.title()},\n" for m in mod_names)
+                    + '}\n'
+                )
+            else:
+                content = '_all_indicators = {}\n'
+        else:
+            if mod_names:
+                content = (
+                    'from . import ' + ','.join(mod_names) + '\n'
+                    '\n'
+                    '_visual_indicators = {\n'
+                    + ''.join(f"    '{m}': {m}.{m.title()},\n" for m in mod_names)
+                    + '}\n'
+                )
+            else:
+                content = '_visual_indicators = {}\n'
+
+        with open(init_path, 'w') as f:
+            f.write(content)
 
 
 def setup(**kwargs):
+    _init_workspace()
     for name, value in kwargs.items():
-        name = name.upper()
-        if name in config:
-            config[name] = value
+        key = name.upper()
+        if key in config:
+            config[key] = value
         else:
-            raise SetiingError("没有该设定")
+            raise SettingError(f'没有该设定: {key}')
 
-    with open(config_file, 'w') as json_config_file:
-        json.dump(config, json_config_file, indent=2)
+    with open(_CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+
+
+_init_workspace()
 

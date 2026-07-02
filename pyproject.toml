@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yuna"
+version = "0.4.0"
+description = "A quantitative analyse for Assets"
+authors = [
+    { name = "Lv Zhi", email = "279094354@qq.com" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE.txt" }
+
+dependencies = [
+    "aiohttp>=3.9",
+    "asgiref>=3.7",
+    "h5py>=3.10",
+    "matplotlib>=3.7",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "peewee>=3.16",
+    "PyMySQL>=1.1",
+    "requests>=2.31",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.3",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Na0ture/yuna"
+
+[project.scripts]
+yuna = "yuna_cli.cli:cli"
+
+[tool.setuptools]
+packages = { find = { include = ["yuna", "yuna.*", "yuna_cli", "yuna_cli.*"] } }
+package-data = { yuna = ["all.pkl"] }

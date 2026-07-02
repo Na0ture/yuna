@@ -2,6 +2,19 @@
 历史
 ------------
 
+0.4.0（2026-07-02）
+++++++++++++++++++
+
+* 迁移构建系统: setup.py → pyproject.toml
+* 升级依赖至现代版本 (Python 3.11+, numpy>=1.24, matplotlib>=3.7, ...)
+* 修复 exec() 安全隐患 → 安全映射表
+* TuShare 数据源迁移至 Pro API (ts.pro_api)
+* setting.py 导入副作用改为惰性初始化
+* 新增 TUSHARE_TOKEN 配置项
+* 补充 .gitignore / ruff.toml 工程化配置
+* 修正 hdf5 字符串比较 bug (is → ==)
+* 修复 SettingError 类名拼写
+
 0.3.0（2018-06-01）
 ++++++++++++++++++
 

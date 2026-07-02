@@ -22,7 +22,7 @@ class Hdf5Destination(DestinationSingleton):
         with h5py.File("data.hdf5", 'a') as file:
             for truck in plane:
                 code = truck.get("Code", "None")
-                if code is 'None':
+                if code == ['None']:
                     continue
                 pe = truck.get("PE", [0])
                 pb = truck.get("PB", [0])

@@ -7,7 +7,7 @@ import datetime
 from unittest import skipIf
 from unittest.mock import Mock, patch
 from yuna.sources.windpy import WindpySource
-from yuna.core import run
+
 
 SKIP_REAL = True
 ACTUAL_DATES = ['2016-05-31', '2016-06-03']
@@ -39,9 +39,6 @@ ACTUAL_TRUCK = "'Close': [16.4117923303386, 16.551128347697446, 16.7904215877582
 
 
 class TestWindpy(unittest.TestCase):
-
-    def setUp(self):
-        run()
 
     @skipIf(SKIP_REAL, '跳过与真实服务器进行数据核对')
     def test_integration_contract(self):

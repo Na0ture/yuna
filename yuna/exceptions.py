@@ -16,5 +16,8 @@ class CreateError(YunaException):
     pass
 
 
-class SetiingError(YunaException):
+class SettingError(YunaException):
     pass
+
+
+SetiingError = SettingError
